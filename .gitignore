@@ -1,0 +1,7 @@
+npm-debug.log
+ayva_cache/
+node_modules/
+lib/
+set_env.*
+yarn-error.log
+.DS_Store

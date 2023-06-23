@@ -1,0 +1,32 @@
+{
+  "name": "membrane-sdk-js",
+  "version": "0.1.0",
+  "description": "Helpers for working with Membrane",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "babel --root-mode upward src/ --out-dir lib/",
+    "watch": "babel-node --root-mode upward --ignore '/node_modules/' ../../resources/watchFlow.js",
+    "test": "jest --useStderr",
+    "clean": "rm -rf lib/",
+    "dev": "./repl.sh",
+    "prepublish": "npm run build"
+  },
+  "author": "Juan Campa <juancampa@gmail.com>",
+  "dependencies": {
+    "deep-equal": "^1.0.1",
+    "immutable": "4.0.0-rc.9",
+    "lodash.debounce": "^4.0.8",
+    "promise-timeout": "1.1.1"
+  },
+  "devDependencies": {
+    "flow-bin": "^0.63.1",
+    "jest-immutable-matchers": "^2.0.1",
+    "sane": "^2.0.0",
+    "watch": "^1.0.2"
+  },
+  "main": "lib",
+  "jest": {
+    "testEnvironment": "node"
+  }
+}
