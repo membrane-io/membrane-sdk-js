@@ -19,7 +19,7 @@ describe('$$', () => {
   it('creates refs from a string', () => {
     const t1 = $$('a:b');
     const t2 = $$(':path.to.value');
-    const t3 = $$(':path(x:1).with(y:"hi").arguments(value:true)');
+    const t3 = $$(':path(x:1).with_some(y:"hi").arguments(value:true)');
 
     expect(t1).toBeInstanceOf(Ref);
     expect(t2).toBeInstanceOf(Ref);

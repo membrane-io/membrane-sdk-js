@@ -408,6 +408,7 @@ const _BACKSLASH = "\\".charCodeAt(0);
 const _PERIOD = ".".charCodeAt(0);
 const _PLUS = "+".charCodeAt(0);
 const _MINUS = "-".charCodeAt(0);
+const _UNDERSCORE = "_".charCodeAt(0);
 const _POUND = "#".charCodeAt(0);
 const _BRACKETOPEN = "[".charCodeAt(0);
 const _BRACKETCLOSE = "]".charCodeAt(0);
@@ -440,6 +441,10 @@ function uniCharCode(a, b, c, d) {
   return char2hex(a) << 12 | char2hex(b) << 8 | char2hex(c) << 4 | char2hex(d);
 }
 
+function isUnderscore(charCode) {
+  return charCode === _UNDERSCORE;
+}
+
 function char2hex(a) {
   return (
     a >= 48 && a <= 57 ? a - 48 : // 0-9
@@ -450,6 +455,6 @@ function char2hex(a) {
 }
 
 function isIdentifierChar(charCode) {
-  return isUpperCase(charCode) || isLowerCase(charCode) || isDigit(charCode);
+  return isUpperCase(charCode) || isLowerCase(charCode) || isDigit(charCode) || isUnderscore(charCode);
 }
 
