@@ -1,18 +1,18 @@
 {
   "name": "@membrane/membrane-sdk-js",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Helpers for working with Membrane",
   "license": "MIT",
   "private": false,
-  "scripts": {
-    "build": "babel src/ --out-dir lib/",
-    "watch": "babel-node --ignore '/node_modules/' ../../resources/watchFlow.js",
-    "test": "jest --useStderr",
-    "clean": "rm -rf lib/",
-    "dev": "./repl.sh",
-    "prepublish": "npm run build"
-  },
   "author": "Juan Campa <juancampa@gmail.com>",
+  "scripts": {
+    "build": "rm -rf lib/ && tsc && tsc",
+    "dev": "tsc --watch",
+    "test": "jest --useStderr",
+    "lint": "eslint --ext .js,.ts src/",
+    "prepublish": "npm run build",
+    "format": "prettier --ignore-path .gitignore --write \"src/*.+(js|ts|json)\""
+  },
   "dependencies": {
     "deep-equal": "^1.0.1",
     "immutable": "^4.3.0",
@@ -20,29 +20,16 @@
     "promise-timeout": "1.1.1"
   },
   "devDependencies": {
-    "flow-bin": "^0.63.1",
-    "jest-immutable-matchers": "^2.0.1",
-    "sane": "^2.0.0",
-    "watch": "^1.0.2",
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.4",
-    "@babel/node": "^7.2.2",
-    "@babel/plugin-proposal-class-properties": "^7.4.4",
-    "@babel/plugin-proposal-export-default-from": "^7.2.0",
-    "@babel/plugin-transform-flow-strip-types": "^7.4.4",
-    "@babel/plugin-transform-modules-commonjs": "^7.4.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-eslint": "^10.0.1",
-    "babel-jest": "^23.6.0",
-    "eslint": "^5.16.0",
-    "eslint-plugin-babel": "^5.3.0",
-    "eslint-plugin-flowtype": "^3.8.1",
-    "jest": "^24.8.0"
+    "@types/jest": "^29.5.2",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.8",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6"
   },
-  "main": "lib",
-  "jest": {
-    "testEnvironment": "node"
-  }
+  "main": "lib"
 }

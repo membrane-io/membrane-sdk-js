@@ -1,23 +1,17 @@
-import * as Immutable from 'immutable';
-import * as util from 'util';
-import * as deepEqual from 'deep-equal';
-
+import * as Immutable from "immutable";
+import * as util from "util";
+import * as deepEqual from "deep-equal";
 export const I = Immutable;
+import debounce from "lodash.debounce";
+export { debounce };
 
-export const debounce = require('lodash.debounce');
+export { $$, Ref, PathElem } from "./ref";
 
-export {
-  $$,
-  Ref,
-  PathElem,
-} from './ref';
+export { RefParser } from "./refParser";
 
-export {
-  RefParser
-} from './refParser';
+export { default as SchemaTraversal } from "./SchemaTraversal";
+export { default as RefTraversal } from "./RefTraversal";
 
-export SchemaTraversal from './SchemaTraversal';
-export RefTraversal from './RefTraversal';
 export {
   AssigningVisitor,
   ObjectTraversal,
@@ -26,25 +20,25 @@ export {
   SchemaVisitor,
   CloningVisitor,
   reconstructPath,
-} from './ObjectTraversal';
+} from "./ObjectTraversal";
 
-export { timeout, TimeoutError } from 'promise-timeout';
+export { timeout, TimeoutError } from "promise-timeout";
 
-export function isUuid(str) {
-  // temp, change to idId with length 24 
-  if ((typeof str !== 'string') || str.length !== 23) {
+export function isUuid(str: string): boolean {
+  // temp, change to idId with length 24
+  if (typeof str !== "string" || str.length !== 23) {
     return false;
   }
   return /^[a-z]{3}-[0-9a-f]{19}$/i.test(str);
 }
 
-export function isWrapperTypeName(typeName) {
-  return typeName === 'Ref' || typeName === 'List';
+export function isWrapperTypeName(typeName: string): boolean {
+  return typeName === "Ref" || typeName === "List";
 }
 
-export function isRefTyped(typed) {
+export function isRefTyped(typed: any): boolean {
   while (typed !== undefined && typed !== null) {
-    if (typed === 'Ref' || typed.type === 'Ref') {
+    if (typed === "Ref" || typed.type === "Ref") {
       return true;
     }
     typed = typed.ofType;
@@ -52,48 +46,55 @@ export function isRefTyped(typed) {
   return false;
 }
 
-export function isPrimitiveTypeName(name: string) {
-  return (typeof name === 'string') &&
-    /^(Int|Float|String|Boolean|Void)$/.test(name);
+export function isPrimitiveTypeName(name: string): boolean {
+  return (
+    typeof name === "string" && /^(Int|Float|String|Boolean|Void)$/.test(name)
+  );
 }
 
-export function isValidIdentifier(name: string) {
-  return (typeof name === 'string') &&
+export function isValidIdentifier(name: string): boolean {
+  return (
+    typeof name === "string" &&
     /^[a-z][a-zA-Z0-9]{0,63}$/.test(name) &&
-    !/^(self|undefined|null|true|false)$/.test(name);
+    !/^(self|undefined|null|true|false)$/.test(name)
+  );
 }
 
-export function isValidMemberName(name: string) {
-  return (typeof name === 'string') &&
+export function isValidMemberName(name: string): boolean {
+  return (
+    typeof name === "string" &&
     /^[a-z][a-zA-Z0-9]{0,63}$/.test(name) &&
-    !/^(undefined|null|true|false|perItem|perPage|forEach|forEachPage)$/.test(name);
+    !/^(undefined|null|true|false|perItem|perPage|forEach|forEachPage)$/.test(
+      name
+    )
+  );
 }
 
-export function isValidTypeName(name: string) {
-  return (typeof name === 'string') &&
-    /^[A-Z_][_a-zA-Z0-9]{0,63}$/.test(name);
+export function isValidTypeName(name: string): boolean {
+  return typeof name === "string" && /^[A-Z_][_a-zA-Z0-9]{0,63}$/.test(name);
 }
 
-export function isValidUsername(name: string) {
-  return (typeof name === 'string') &&
-    /^[_a-zA-Z0-9]{3,24}$/.test(name);
+export function isValidUsername(name: string): boolean {
+  return typeof name === "string" && /^[_a-zA-Z0-9]{3,24}$/.test(name);
 }
 
-export function isValidTypeIdentifier(name: string) {
-  if (typeof name !== 'string') {
+export function isValidTypeIdentifier(name: string): boolean {
+  if (typeof name !== "string") {
     return false;
   }
-  const colon = name.indexOf(':');
+  const colon = name.indexOf(":");
   if (colon >= 0) {
     const programName = name.substr(0, colon);
-    return (isValidProgramName(programName) || isUuid(programName)) &&
-      isValidTypeName(name.substr(colon + 1));
+    return (
+      (isValidProgramName(programName) || isUuid(programName)) &&
+      isValidTypeName(name.substr(colon + 1))
+    );
   }
   return isValidTypeName(name);
 }
 
-export function isValidProgramName(name) {
-  if (typeof name !== 'string') {
+export function isValidProgramName(name: string): boolean {
+  if (typeof name !== "string") {
     return false;
   }
   // Must be less than the length of a uuid to prevent clashes
@@ -103,8 +104,8 @@ export function isValidProgramName(name) {
   return isValidIdentifier(name);
 }
 
-export function isValidEnvironmentName(name) {
-  if (typeof name !== 'string') {
+export function isValidEnvironmentName(name: string): boolean {
+  if (typeof name !== "string") {
     return false;
   }
   // Must be less than the length of a uuid to prevent clashes
@@ -114,35 +115,37 @@ export function isValidEnvironmentName(name) {
   return /^[A-Z_][A-Z_0-9]*$/.test(name);
 }
 
-export function isValidDependencyName(name) {
+export function isValidDependencyName(name: string): boolean {
   // Dependencies can be any identifier except for root because that's already
   // taken by the program itself and would be confusing
-  if (name === 'root') {
+  if (name === "root") {
     return false;
   }
   return isValidIdentifier(name);
 }
-export function isValidEndpointName(name) {
+export function isValidEndpointName(name: string): boolean {
   return isValidIdentifier(name);
 }
 
 // Tags must be of the form xx-xxx-xxxxx-xx (i.e. lowecase separated by dashes)
-export function isValidTagName(name: string) {
-  return (typeof name === 'string') &&
+export function isValidTagName(name: string): boolean {
+  return (
+    typeof name === "string" &&
     name.length <= 35 &&
     /^[a-z](-?[a-z0-9]+)*$/.test(name) &&
-    !/^(self|undefined|null|true|false)$/.test(name);
+    !/^(self|undefined|null|true|false)$/.test(name)
+  );
 }
 
-export function isImplicitTypeName(typeName) {
-  return typeName.endsWith('_params');
+export function isImplicitTypeName(typeName: string): boolean {
+  return typeName.endsWith("_params");
 }
 
-export function isObject(o) {
-  return o && typeof o === 'object' && !Array.isArray(o);
+export function isObject(o: any): boolean {
+  return o && typeof o === "object" && !Array.isArray(o);
 }
 
-export function isArray(o) {
+export function isArray(o: any): boolean {
   return Array.isArray(o);
 }
 
@@ -176,7 +179,13 @@ export function without(object, ...toExclude) {
 // Returns a deep clone of the provided object
 export function deepClone(object) {
   const t = typeof object;
-  if (object === null || t === 'string' || t === 'number' || t === 'boolean' || t === 'undefined') {
+  if (
+    object === null ||
+    t === "string" ||
+    t === "number" ||
+    t === "boolean" ||
+    t === "undefined"
+  ) {
     return object;
   }
 
@@ -237,7 +246,7 @@ export function shallowEquals(a, b) {
     return arrayEquals(a, b);
   }
 
-  if (typeA !== 'object') {
+  if (typeA !== "object") {
     return false;
   }
 
@@ -288,14 +297,14 @@ export function getInnerType(typed) {
   let innerType = typed.type;
   let ofType = typed.ofType;
   let isRef = false;
-  while (innerType === 'Ref' || innerType === 'List') {
-    if (innerType === 'Ref') {
+  while (innerType === "Ref" || innerType === "List") {
+    if (innerType === "Ref") {
       if (isRef) {
-        throw new Error('Declaring a Ref of a Ref is invalid');
+        throw new Error("Declaring a Ref of a Ref is invalid");
       }
       isRef = true;
     }
-    if (typeof ofType === 'string') {
+    if (typeof ofType === "string") {
       innerType = ofType;
     } else {
       innerType = ofType.type;
@@ -311,17 +320,17 @@ export function setInnerType(typed, innerType: string) {
   let o = typed;
   let ofType = o.ofType;
   let isRef = false;
-  while (o.type === 'Ref' || o.type === 'List') {
+  while (o.type === "Ref" || o.type === "List") {
     if (!o.ofType) {
-      throw new Error('A wrapper type must define an ofType');
+      throw new Error("A wrapper type must define an ofType");
     }
-    if (o.type === 'Ref') {
+    if (o.type === "Ref") {
       if (isRef) {
-        throw new Error('Declaring a Ref of a Ref is invalid');
+        throw new Error("Declaring a Ref of a Ref is invalid");
       }
       isRef = true;
     }
-    if (typeof ofType !== 'object') {
+    if (typeof ofType !== "object") {
       o.ofType = innerType;
       return;
     }
@@ -335,13 +344,13 @@ export function setInnerType(typed, innerType: string) {
 // Given a type that might have a program version id prefix, returns an object
 // with the program version and the type name.
 export function parseTypeName(typeName) {
-  const colon = typeName.indexOf(':');
+  const colon = typeName.indexOf(":");
   let programVersionId;
   if (colon >= 0) {
     programVersionId = typeName.substr(0, colon);
     typeName = typeName.substr(colon + 1);
   } else {
-    programVersionId = '';
+    programVersionId = "";
   }
   return { programVersionId, typeName };
 }
@@ -350,19 +359,25 @@ export function parseTypeName(typeName) {
 let traceLevel = 0;
 export const traceBegin = (...args) => {
   return;
-  const str = '> begin ' + args.map((a) => typeof a === 'string' ? a : util.inspect(a)).join(' ');
+  const str =
+    "> begin " +
+    args.map((a) => (typeof a === "string" ? a : util.inspect(a))).join(" ");
   console.log(indent(str, traceLevel));
   traceLevel++;
 };
 export const trace = (...args) => {
   return;
-  const str = '> ' + args.map((a) => typeof a === 'string' ? a : util.inspect(a)).join(' ');
+  const str =
+    "> " +
+    args.map((a) => (typeof a === "string" ? a : util.inspect(a))).join(" ");
   console.log(indent(str, traceLevel));
 };
 export const traceEnd = (...args) => {
   return;
   traceLevel--;
-  const str = '> end ' + args.map((a) => typeof a === 'string' ? a : util.inspect(a)).join(' ');
+  const str =
+    "> end " +
+    args.map((a) => (typeof a === "string" ? a : util.inspect(a))).join(" ");
   console.log(indent(str, traceLevel));
 };
 
@@ -392,7 +407,7 @@ export function arrayEquals(a, b) {
 
 // Generates a random hex chars
 export function randomHex(length = 16) {
-  let result = '';
+  let result = "";
   while (result.length < length) {
     result += Math.floor(Math.random() * 1e16).toString(16);
   }
@@ -422,13 +437,12 @@ export function sharedResult(fn) {
       const remove = () => {
         process.nextTick(() => delete inFlightPromises[key]);
       };
-      inFlightPromises[key] = fn(key, ...args)
-        .then((result) => {
-          remove();
-          return result;
-        }, remove);
+      inFlightPromises[key] = fn(key, ...args).then((result) => {
+        remove();
+        return result;
+      }, remove);
     } else {
-      console.log('USING SHARED PROMISE');
+      console.log("USING SHARED PROMISE");
     }
     return inFlightPromises[key];
   };
@@ -447,7 +461,7 @@ export function hasUnknownKeys(object, valid) {
 // undefined prop
 export function withoutUndefined(o) {
   if (!isObject(o)) {
-    throw new Error('Expected valid object in withoutUndefinedProps');
+    throw new Error("Expected valid object in withoutUndefinedProps");
   }
   const keys = Object.keys(o);
   for (let key of keys) {
@@ -459,20 +473,22 @@ export function withoutUndefined(o) {
 
 // Promise that resolves at the provided number of seconds (uses setTimeout)
 export function sleep(secs) {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve) => {
     setTimeout(() => resolve(), secs * 1000);
   });
 }
 
-export function indent(text, amount, indenter = ' ', suffix = '') {
+export function indent(text, amount, indenter = " ", suffix = "") {
   const pad = indenter.repeat(amount);
-  const tokens = text.split('\n');
-  return tokens.map((line) => {
-    if (line.length > 0) {
-      return pad + line + suffix;
-    }
-    return '';
-  }).join('\n');
+  const tokens = text.split("\n");
+  return tokens
+    .map((line) => {
+      if (line.length > 0) {
+        return pad + line + suffix;
+      }
+      return "";
+    })
+    .join("\n");
 }
 
 // Recursively freezes an object
@@ -480,10 +496,13 @@ export function deepFreeze(o) {
   Object.freeze(o);
 
   Object.getOwnPropertyNames(o).forEach((prop) => {
-    if (o.hasOwnProperty(prop) &&
-        o[prop] !== null &&
-        (typeof o[prop] === "object" || typeof o[prop] === "function") &&
-        !Object.isFrozen(o[prop])) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (
+      o.hasOwnProperty(prop) &&
+      o[prop] !== null &&
+      (typeof o[prop] === "object" || typeof o[prop] === "function") &&
+      !Object.isFrozen(o[prop])
+    ) {
       deepFreeze(o[prop]);
     }
   });

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES5",
+    "lib": ["ES2015", "DOM"],
+    "declaration": true,
+    "outDir": "lib",
+    "moduleResolution": "node",
+    "types": ["jest", "node"],
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "__tests__/**/*"],
+}

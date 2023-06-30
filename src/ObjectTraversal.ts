@@ -1,24 +1,17 @@
-import {
-  Ref,
-  $$,
-  I,
-  SchemaTraversal,
-  isObject,
-  isArray,
-} from '.';
-import assert from 'assert';
+import { Ref, $$, I, SchemaTraversal, isObject, isArray } from ".";
+import assert from "assert";
 
 // Objects that want to be treated as Refs can set this property to true
-const kRefEquivalentKey = Symbol.for('RefEquivalent');
+const kRefEquivalentKey = Symbol.for("RefEquivalent");
 
-export function reconstructPath(path) {
+export function reconstructPath(path: any) {
   let keys = [];
   let p = path;
   while (p) {
     keys.push(p.key);
     p = p.parent;
   }
-  return keys.reverse().join('.');
+  return keys.reverse().join(".");
 }
 
 // TODO: use symbols
@@ -29,7 +22,9 @@ const traversalCommands = {
 
 // Traverses an object
 export class ObjectTraversal {
-  constructor(object) {
+  object: object;
+
+  constructor(object?) {
     this.object = object;
   }
 
@@ -41,7 +36,7 @@ export class ObjectTraversal {
     if (visitor && visitor.end) {
       visitor.end();
     }
-  }
+  };
 
   _traverseRecursively = (visitor, object, path, skipChildren = false) => {
     let command;
@@ -50,7 +45,8 @@ export class ObjectTraversal {
       command = visitor.enter(object, path, traversalCommands, context);
     }
 
-    skipChildren = skipChildren ||
+    skipChildren =
+      skipChildren ||
       object instanceof Ref ||
       (command && command.$$skip) ||
       (command && command.$$use !== undefined);
@@ -60,11 +56,17 @@ export class ObjectTraversal {
       if (isObject(object)) {
         const keys = Object.keys(object);
         for (let key of keys) {
-          this._traverseRecursively(visitor, object[key], { key, parent: path });
+          this._traverseRecursively(visitor, object[key], {
+            key,
+            parent: path,
+          });
         }
       } else if (isArray(object)) {
         for (let key = 0; key < object.length; ++key) {
-          this._traverseRecursively(visitor, object[key], { key, parent: path });
+          this._traverseRecursively(visitor, object[key], {
+            key,
+            parent: path,
+          });
         }
       }
     }
@@ -79,15 +81,21 @@ export class ObjectTraversal {
       // contains the previous value if a value is replaced via the "use"
       // command. Rename to "info"?
       path.prevValue = object;
-      this._traverseRecursively(visitor, command.$$use, path, Boolean(command.$$skip));
+      this._traverseRecursively(
+        visitor,
+        command.$$use,
+        path,
+        Boolean(command.$$skip)
+      );
     }
-  }
+  };
 }
 
 // Traverses an object. The difference between this class and ObjectTraversal is
 // that visitors can return promises to traverse the object asynchronously
 export class AsyncObjectTraversal {
-  constructor(object) {
+  object: object;
+  constructor(object?) {
     this.object = object;
   }
 
@@ -99,16 +107,22 @@ export class AsyncObjectTraversal {
     if (visitor && visitor.end) {
       await visitor.end();
     }
-  }
+  };
 
-  _traverseRecursively = async (visitor, object, path, skipChildren = false) => {
+  _traverseRecursively = async (
+    visitor,
+    object,
+    path,
+    skipChildren = false
+  ) => {
     let command;
     const context = {};
     if (visitor && visitor.enter) {
       command = await visitor.enter(object, path, traversalCommands, context);
     }
 
-    skipChildren = skipChildren ||
+    skipChildren =
+      skipChildren ||
       object instanceof Ref ||
       (command && command.$$skip) ||
       (command && command.$$use !== undefined);
@@ -118,11 +132,17 @@ export class AsyncObjectTraversal {
       if (isObject(object)) {
         const keys = Object.keys(object);
         for (let key of keys) {
-          await this._traverseRecursively(visitor, object[key], { key, parent: path });
+          await this._traverseRecursively(visitor, object[key], {
+            key,
+            parent: path,
+          });
         }
       } else if (isArray(object)) {
         for (let key = 0; key < object.length; ++key) {
-          await this._traverseRecursively(visitor, object[key], { key, parent: path });
+          await this._traverseRecursively(visitor, object[key], {
+            key,
+            parent: path,
+          });
         }
       }
     }
@@ -134,14 +154,21 @@ export class AsyncObjectTraversal {
     if (command && command.$$use !== undefined) {
       // The visitor decided to traverse a different object at this path
       path.prevValue = object;
-      return this._traverseRecursively(visitor, command.$$use, path, Boolean(command.$$skip));
+      return this._traverseRecursively(
+        visitor,
+        command.$$use,
+        path,
+        Boolean(command.$$skip)
+      );
     }
-  }
+  };
 }
 
 // Pass through visitor. Other visitors can inherit from this one and override
 // some/all of the methods
 export class Visitor {
+  visitor: any;
+
   constructor(visitor) {
     this.visitor = visitor;
   }
@@ -174,7 +201,14 @@ export class Visitor {
 // Visits an object while checking that it matches a schema. For every node, it
 // calls the visitor function which can replace the node, skip it, etc.
 export class SchemaVisitor {
-  constructor(schemaTraversal, visitor, options) {
+  visitor: any;
+  schemaTraversal: any;
+  initialSchemaTraversal: any;
+  stack: any;
+  skipNextExit: any;
+  allowResolvedRefs: any;
+
+  constructor(schemaTraversal?, visitor?, options?) {
     // You can also pass the the schema
     if (!(schemaTraversal instanceof SchemaTraversal)) {
       schemaTraversal = new SchemaTraversal(schemaTraversal);
@@ -184,7 +218,7 @@ export class SchemaVisitor {
 
     // Whether to allow ref fields to have a value instead of a Ref. This
     // happens when traversing a query result after running subqueries
-    this.allowResolvedRefs = options && options.allowResolvedRefs || false;
+    this.allowResolvedRefs = (options && options.allowResolvedRefs) || false;
   }
 
   top() {
@@ -209,7 +243,7 @@ export class SchemaVisitor {
   enter(object, path, commands, context) {
     const key = path && path.key;
     let { wrappers } = this.top();
-    const inList = wrappers[0] === 'List';
+    const inList = wrappers[0] === "List";
 
     if (inList) {
       // We're traversing a list so there's no need to push another member in
@@ -218,22 +252,25 @@ export class SchemaVisitor {
     } else {
       if (key && !this.schemaTraversal.enterMember(key)) {
         const pathStr = reconstructPath(path.parent);
-        const typeStr = (this.schemaTraversal.type || { name: 'unknown type'}).name;
-        throw new Error(`SchemaVisitor: Member "${key}" at path "${pathStr}" (${typeStr}) not found in schema`);
+        const typeStr = (this.schemaTraversal.type || { name: "unknown type" })
+          .name;
+        throw new Error(
+          `SchemaVisitor: Member "${key}" at path "${pathStr}" (${typeStr}) not found in schema`
+        );
       }
 
       wrappers = this.schemaTraversal.getWrappers();
     }
     this.stack.push({ wrappers });
 
-    const isList = wrappers[0] === 'List';
-    const isRef = wrappers[0] === 'Ref';
+    const isList = wrappers[0] === "List";
+    const isRef = wrappers[0] === "Ref";
 
     // If this is a JSON ref, replace it with an actual Ref and try again. Also,
     // if this is a ref-wrapped field turn the value which should be a string or
     // json ref into a Ref
     const isRefEquivalent = object && object[kRefEquivalentKey] === true;
-    const isJsonRef = object && typeof object.$ref === 'string';
+    const isJsonRef = object && typeof object.$ref === "string";
     if (isJsonRef && !isRefEquivalent) {
       this.skipNextExit = true;
       return commands.use($$(object));
@@ -245,37 +282,67 @@ export class SchemaVisitor {
     if (object !== null && object !== undefined) {
       if (isRef) {
         if (!isRefValue && !this.allowResolvedRefs) {
-          throw new Error(`SchemaVisitor: Expected ref at path "${reconstructPath(path)}"`);
+          throw new Error(
+            `SchemaVisitor: Expected ref at path "${reconstructPath(path)}"`
+          );
         }
       }
       if (!isRefValue) {
         assert.ok(!isRef || this.allowResolvedRefs);
         if (isList) {
           if (!isArray(object)) {
-            throw new Error(`SchemaVisitor: Expected array at path "${reconstructPath(path)}". Got "${typeof object}"`);
+            throw new Error(
+              `SchemaVisitor: Expected array at path "${reconstructPath(
+                path
+              )}". Got "${typeof object}"`
+            );
           }
-        } else if (type.name === 'Void' && !this.allowResolvedRefs) {
+        } else if (type.name === "Void" && !this.allowResolvedRefs) {
           if (object !== undefined) {
-            throw new Error(`SchemaVisitor: Expected undefined (Void) at path "${reconstructPath(path)}". Got "${typeof object}"`);
+            throw new Error(
+              `SchemaVisitor: Expected undefined (Void) at path "${reconstructPath(
+                path
+              )}". Got "${typeof object}"`
+            );
           }
-        } else if (type.name === 'Int') {
-          if (typeof object !== 'number') {
-            throw new Error(`SchemaVisitor: Expected number at path "${reconstructPath(path)}". Got "${typeof object}"`);
+        } else if (type.name === "Int") {
+          if (typeof object !== "number") {
+            throw new Error(
+              `SchemaVisitor: Expected number at path "${reconstructPath(
+                path
+              )}". Got "${typeof object}"`
+            );
           }
-        } else if (type.name === 'Float') {
-          if (typeof object !== 'number') {
-            throw new Error(`SchemaVisitor: Expected number at path "${reconstructPath(path)}". Got "${typeof object}"`);
+        } else if (type.name === "Float") {
+          if (typeof object !== "number") {
+            throw new Error(
+              `SchemaVisitor: Expected number at path "${reconstructPath(
+                path
+              )}". Got "${typeof object}"`
+            );
           }
-        } else if (type.name === 'Boolean') {
-          if (typeof object !== 'boolean') {
-            throw new Error(`SchemaVisitor: Expected boolean at path "${reconstructPath(path)}". Got "${typeof object}"`);
+        } else if (type.name === "Boolean") {
+          if (typeof object !== "boolean") {
+            throw new Error(
+              `SchemaVisitor: Expected boolean at path "${reconstructPath(
+                path
+              )}". Got "${typeof object}"`
+            );
           }
-        } else if (type.name === 'String') {
-          if (typeof object !== 'string') {
-            throw new Error(`SchemaVisitor: Expected string at path "${reconstructPath(path)}". Got "${typeof object}"`);
+        } else if (type.name === "String") {
+          if (typeof object !== "string") {
+            throw new Error(
+              `SchemaVisitor: Expected string at path "${reconstructPath(
+                path
+              )}". Got "${typeof object}"`
+            );
           }
         } else if (!isObject(object)) {
-          throw new Error(`SchemaVisitor: Expected object at path "${reconstructPath(path)}" (of type ${type.name}). Got ${typeof object}`);
+          throw new Error(
+            `SchemaVisitor: Expected object at path "${reconstructPath(
+              path
+            )}" (of type ${type.name}). Got ${typeof object}`
+          );
         }
       }
     }
@@ -294,7 +361,7 @@ export class SchemaVisitor {
   exit(object, path, commands, context) {
     this.stack.pop();
     const { wrappers } = this.top();
-    if (wrappers.length === 0 || wrappers[0] !== 'List') {
+    if (wrappers.length === 0 || wrappers[0] !== "List") {
       this.schemaTraversal.pop();
     }
 
@@ -307,7 +374,11 @@ export class SchemaVisitor {
 }
 
 export class CloningVisitor {
-  constructor(visitor) {
+  visitor: any;
+  stack: any[];
+  result: any;
+
+  constructor(visitor?: any) {
     this.result = null;
     this.visitor = visitor;
   }
@@ -317,7 +388,7 @@ export class CloningVisitor {
     if (this.visitor && this.visitor.begin) {
       this.visitor.begin();
     }
-  }
+  };
 
   end() {
     if (this.visitor && this.visitor.end) {
@@ -336,7 +407,7 @@ export class CloningVisitor {
       copy = [];
     } else if (object === null) {
       copy = null;
-    } else if (typeof object === 'object') {
+    } else if (typeof object === "object") {
       copy = {};
       if (Object.getPrototypeOf(object) !== Object.prototype) {
         Object.setPrototypeOf(copy, Object.getPrototypeOf(object));
@@ -345,7 +416,8 @@ export class CloningVisitor {
       copy = object;
     }
 
-    const command = this.visitor && this.visitor.enter(object, path, commands, context);
+    const command =
+      this.visitor && this.visitor.enter(object, path, commands, context);
     if (!I.isImmutable(parent)) {
       if (path === null) {
         parent.result = copy;
@@ -367,7 +439,10 @@ export class CloningVisitor {
 }
 
 export class AssigningVisitor {
-  constructor(visitor) {
+  visitor: any;
+  stack: any[];
+
+  constructor(visitor?: any) {
     this.visitor = visitor;
   }
 
@@ -376,7 +451,7 @@ export class AssigningVisitor {
     if (this.visitor && this.visitor.begin) {
       this.visitor.begin();
     }
-  }
+  };
 
   end() {
     if (this.visitor && this.visitor.end) {
@@ -394,7 +469,8 @@ export class AssigningVisitor {
 
     const parent = this.stack[this.stack.length - 1];
     if (path) {
-      if (path.hasOwnProperty('prevValue')) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (path.hasOwnProperty("prevValue")) {
         parent[path.key] = object;
       }
     }
