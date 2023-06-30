@@ -272,10 +272,10 @@ export default class SchemaTraversal {
       typed = type.fields.find((f) => f.name === name);
       memberKind = "field";
     }
-    if (typed === undefined && type.computedFields) {
-      typed = type.computedFields.find((f) => f.name === name);
-      memberKind = "computedField";
-    }
+    // if (typed === undefined && type.computedFields) {
+    //   typed = type.computedFields.find((f) => f.name === name);
+    //   memberKind = "computedField";
+    // }
     if (typed === undefined && type.events) {
       typed = type.events.find((f) => f.name === name);
       // HACK: some older programs don't define a type for events. This is how

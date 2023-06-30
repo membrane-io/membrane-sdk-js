@@ -195,33 +195,30 @@ describe("SchemaTraversal", () => {
   });
 
   describe("enterParam", () => {
-    // it("enters a scalar param of a scalar member", () => {
-    //   const t1 = new SchemaTraversal(schema);
-    //   t1.enterMember("scalarComputedWithParams");
-    //   const t2 = t1.enterParam("strParam");
-    //   expect(t2).toBe(true);
-    // });
-
-    // it("enters a non scalar param of a scalar member", () => {
-    //   const t1 = new SchemaTraversal(schema);
-    //   t1.enterMember("scalarComputedWithParams");
-    //   const t2 = t1.enterParam("refParam");
-    //   expect(t2).toBe(true);
-    // });
-
-    // it("enters a scalar param of a non-scalar member", () => {
-    //   const t1 = new SchemaTraversal(schema);
-    //   t1.enterMember("scalarComputedWithParams");
-    //   const t2 = t1.enterParam("strParam");
-    //   expect(t2).toBe(true);
-    // });
-
-    // it("enters a non-scalar param of a non-scalar member", () => {
-    //   const t1 = new SchemaTraversal(schema);
-    //   t1.enterMember("scalarComputedWithParams");
-    //   const t2 = t1.enterParam("refParam");
-    //   expect(t2).toBe(true);
-    // });
+    it("enters a scalar param of a scalar member", () => {
+      const t1 = new SchemaTraversal(schema);
+      t1.enterMember("scalarComputedWithParams");
+      const t2 = t1.enterParam("strParam");
+      expect(t2).toBe(true);
+    });
+    it("enters a non scalar param of a scalar member", () => {
+      const t1 = new SchemaTraversal(schema);
+      t1.enterMember("scalarComputedWithParams");
+      const t2 = t1.enterParam("refParam");
+      expect(t2).toBe(true);
+    });
+    it("enters a scalar param of a non-scalar member", () => {
+      const t1 = new SchemaTraversal(schema);
+      t1.enterMember("scalarComputedWithParams");
+      const t2 = t1.enterParam("strParam");
+      expect(t2).toBe(true);
+    });
+    it("enters a non-scalar param of a non-scalar member", () => {
+      const t1 = new SchemaTraversal(schema);
+      t1.enterMember("scalarComputedWithParams");
+      const t2 = t1.enterParam("refParam");
+      expect(t2).toBe(true);
+    });
   });
 
   describe("getTyped", () => {
@@ -273,13 +270,13 @@ describe("SchemaTraversal", () => {
       const t1 = new SchemaTraversal(schema);
       t1.enterMember("thing");
       t1.enterMember("at");
-      // expect(t1.getParamsTypeAndSchema()).toEqual({
-      //   type: {
-      //     fields: [{ name: "field", type: "Int" }],
-      //     name: "ThingCollection_at_params",
-      //   },
-      //   schema: schema.imports[0],
-      // });
+      expect(t1.getParamsTypeAndSchema()).toEqual({
+        type: {
+          fields: [{ name: "field", type: "Int" }],
+          name: "ThingCollection_at_params",
+        },
+        schema: schema.imports[0],
+      });
     });
 
     it("returns undefined when the current member has no params", () => {
@@ -340,13 +337,13 @@ describe("SchemaTraversal", () => {
     it("returns a ref to the current location in the schema 2", () => {
       const t1 = new SchemaTraversal(schema);
       t1.enterRef(":ownThing.thingRef.related");
-      
+
       expect(t1.ref).toEqual($$(":ownThing.thingRef.related"));
     });
   });
 
   describe("getScalarFields", () => {
-    it("returns all scalar fields", () => {
+    it("returns all scalar", () => {
       const t1 = new SchemaTraversal(schema);
       t1.enterMember("ownThing");
 
@@ -368,52 +365,5 @@ describe("SchemaTraversal", () => {
         { name: "void", type: "Void" },
       ]);
     });
-    // Disabled because computed fields are not yet supported
-
-    // it("returns all scalar fields (including computed)", () => {
-    //   const t1 = new SchemaTraversal(schema);
-    //   t1.enterMember("ownThing");
-
-    //   const result = t1.getScalarFields({ computed: true });
-    //   expect(result).toEqual([
-    //     { name: "field", type: "String" },
-    //     { name: "fieldRef", type: "Ref", ofType: { type: "String" } },
-    //     { name: "fields", type: "List", ofType: "String" },
-    //     { name: "int", type: "Int" },
-    //     { name: "float", type: "Float" },
-    //     { name: "bool", type: "Boolean" },
-    //     { name: "strList", type: "List", ofType: "String" },
-    //     {
-    //       name: "strListList",
-    //       type: "List",
-    //       ofType: { type: "List", ofType: "String" },
-    //     },
-    //     { name: "voidRef", type: "Ref", ofType: "Void" },
-    //     { name: "void", type: "Void" },
-    //     { name: "strList", type: "List", ofType: "String" },
-    //     {
-    //       name: "strListList",
-    //       type: "List",
-    //       ofType: { type: "List", ofType: "String" },
-    //     },
-    //     { name: "voidRef", type: "Ref", ofType: "Void" },
-    //   ]);
-    // });
-
-    // it("returns all scalar fields (only computed)", () => {
-    //   const t1 = new SchemaTraversal(schema);
-    //   t1.enterMember("ownThing");
-
-    //   const result = t1.getScalarFields({ computed: true, fields: false });
-    //   expect(result).toEqual([
-    //     { name: "strList", type: "List", ofType: "String" },
-    //     {
-    //       name: "strListList",
-    //       type: "List",
-    //       ofType: { type: "List", ofType: "String" },
-    //     },
-    //     { name: "voidRef", type: "Ref", ofType: "Void" },
-    //   ]);
-    // });
   });
 });

@@ -9,15 +9,15 @@ describe('matchesInterface', () => {
     const i1 = new SchemaTraversal({ types: [{ name: 'Root' }] });
     expect(matchesInterface(t1, i1)).toBe(true);
 
-    // const t2 = new SchemaTraversal(schema);
-    // const i2 = new SchemaTraversal({ types: [{ name: 'Root' }] });
-    // expect(t2.enterMember('scalarComputedWithParams')).toBe(true);
-    // expect(matchesInterface(t2, i2)).toBe(true);
+    const t2 = new SchemaTraversal(schema);
+    const i2 = new SchemaTraversal({ types: [{ name: 'Root' }] });
+    expect(t2.enterMember('scalarComputedWithParams')).toBe(true);
+    expect(matchesInterface(t2, i2)).toBe(true);
 
-    // const t3 = new SchemaTraversal(schema);
-    // const i3 = new SchemaTraversal({ types: [{ name: 'Root' }] });
-    // expect(t3.enterMember('nonScalarComputedWithParams')).toBe(true);
-    // expect(matchesInterface(t3, i3)).toBe(true);
+    const t3 = new SchemaTraversal(schema);
+    const i3 = new SchemaTraversal({ types: [{ name: 'Root' }] });
+    expect(t3.enterMember('nonScalarComputedWithParams')).toBe(true);
+    expect(matchesInterface(t3, i3)).toBe(true);
   });
 
   it('anything matches a Void member', () => {
@@ -54,21 +54,21 @@ describe('matchesInterface', () => {
     expect(matchesInterface(t1, i2)).toBe(false);
   });
 
-//   it('does not match if interface has extra computedFields', () => {
-//     const t1 = new SchemaTraversal(schema);
-//     const i1 = new SchemaTraversal(
-//       { types: [ { name: 'Root', computedFields: [{ name: 'dontHaveIt', type: 'Int' }] } ] }
-//     );
-//     expect(matchesInterface(t1, i1)).toBe(false);
+  // it('does not match if interface has extra computedFields', () => {
+  //   const t1 = new SchemaTraversal(schema);
+  //   const i1 = new SchemaTraversal(
+  //     { types: [ { name: 'Root', computedFields: [{ name: 'dontHaveIt', type: 'Int' }] } ] }
+  //   );
+  //   expect(matchesInterface(t1, i1)).toBe(false);
 
-//     const i2 = new SchemaTraversal(
-//       { types: [
-//         { name: 'Root', computedFields: [{ name: 'dontHaveIt', type: 'T' }] },
-//         { name: 'T', computedFields: [{ name: 'f', type: 'Int' }] }
-//       ] }
-//     );
-//     expect(matchesInterface(t1, i2)).toBe(false);
-//   });
+  //   const i2 = new SchemaTraversal(
+  //     { types: [
+  //       { name: 'Root', computedFields: [{ name: 'dontHaveIt', type: 'T' }] },
+  //       { name: 'T', computedFields: [{ name: 'f', type: 'Int' }] }
+  //     ] }
+  //   );
+  //   expect(matchesInterface(t1, i2)).toBe(false);
+  // });
 
   it('does not match if interface has extra actions', () => {
     const t1 = new SchemaTraversal(schema);
@@ -187,33 +187,33 @@ describe('matchesInterface', () => {
   });
 
   // NOTE: Use this to test memoization. Compare times with it enabled and disabled
-  // it('memoization test', () => {
-  //   const t1 = new SchemaTraversal(
-  //     {
-  //       types: [
-  //         { name: 'Root', fields: [] },
-  //         { name: 'T1', fields: [{ name: 'f1', type: 'Int' }, { name: 'f2', type: 'Int' }] },
-  //       ]
-  //     }
-  //   );
-  //   const i1 = new SchemaTraversal(
-  //     {
-  //       types: [
-  //         { name: 'Root', fields: [] },
-  //         { name: 'T2', fields: [{ name: 'f1', type: 'Int' }, { name: 'f2', type: 'Int' }] },
-  //       ]
-  //     }
-  //   );
-  //   const N = 1000000;
-  //   const root1 = t1.schema.types[0];
-  //   const root2 = i1.schema.types[0];
-  //   for (let i = 0; i < N; ++i) {
-  //     root1.fields.push({ name: 'f' + N, type: 'T1' });
-  //     root2.fields.push({ name: 'f' + N, type: 'T2' });
-  //   }
-  //   console.time('Memoization');
-  //   expect(matchesInterface(t1, i1)).toBe(true);
-  //   console.timeEnd('Memoization');
-  // });
+  it('memoization test', () => {
+    const t1 = new SchemaTraversal(
+      {
+        types: [
+          { name: 'Root', fields: [] },
+          { name: 'T1', fields: [{ name: 'f1', type: 'Int' }, { name: 'f2', type: 'Int' }] },
+        ]
+      }
+    );
+    const i1 = new SchemaTraversal(
+      {
+        types: [
+          { name: 'Root', fields: [] },
+          { name: 'T2', fields: [{ name: 'f1', type: 'Int' }, { name: 'f2', type: 'Int' }] },
+        ]
+      }
+    );
+    const N = 1000000;
+    const root1 = t1.schema.types[0];
+    const root2 = i1.schema.types[0];
+    for (let i = 0; i < N; ++i) {
+      root1.fields.push({ name: 'f' + N, type: 'T1' });
+      root2.fields.push({ name: 'f' + N, type: 'T2' });
+    }
+    console.time('Memoization');
+    expect(matchesInterface(t1, i1)).toBe(true);
+    console.timeEnd('Memoization');
+  });
 
 });

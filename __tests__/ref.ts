@@ -5,7 +5,7 @@ import "../jest.setup";
 
 describe("$$", () => {
   it("Throws when no argument is provided", () => {
-    expect(() => $$()).toThrow("Refs can only be constructed");
+    expect(() => $$(undefined as any)).toThrowError("Refs can only be constructed");
   });
 
   it("Throws when null is passed as an argument", () => {

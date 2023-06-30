@@ -1,8 +1,10 @@
 import I from "immutable";
 import { RefParser } from "./refParser.js";
 
+type RefT = Ref | undefined | string | { $ref: string; };
+
 // Serializes the provided value into its literal ref version
-function serializeValue(value: any, isGraphQL: boolean): string {
+function serializeValue(value: string | Ref, isGraphQL: boolean): string {
   if (value instanceof Ref) {
     if (isGraphQL) {
       return `"${value.toString().replace(/"/g, '\\"')}"`;
@@ -16,7 +18,7 @@ function serializeValue(value: any, isGraphQL: boolean): string {
 
 // An element in a ref's path
 export class PathElem extends I.Record({ name: "", args: I.Map() }) {
-  withArgs(args: any) {
+  withArgs(args) {
     if (!I.Map.isMap(args)) {
       args = I.Map(args);
     }
@@ -39,7 +41,10 @@ export class PathElem extends I.Record({ name: "", args: I.Map() }) {
   argsToString(isGraphQL: boolean) {
     return this.args
       .sortBy((value, key) => key)
-      .map((value, key) => `${key}:${serializeValue(value, isGraphQL)}`)
+      .map(
+        (value: string | Ref, key: string) =>
+          `${key}:${serializeValue(value, isGraphQL)}`
+      )
       .join(",");
   }
 
@@ -106,14 +111,14 @@ export class Ref extends I.Record({ program: "", path: I.List() }) {
     throw new Error("Ref.clone() IS DEPRECATED");
   }
 
-  static _validate(ref: any): void {
+  static _validate(ref): void {
     // console.log(ref.toString());
     // Assuming $$ function exists for validation
     // $$(ref.toString());
   }
 
   // Returns the same ref but with a different program
-  withProgram(name?: string): any {
+  withProgram(name?: string): Ref {
     const result = this.set("program", name);
     Ref._validate(result);
     return result;
@@ -257,7 +262,7 @@ export class Ref extends I.Record({ program: "", path: I.List() }) {
   }
 
   // Returns a JS object with the args at the provided ref
-  argsAt(ref) {
+  argsAt(ref: Ref | string) {
     if (typeof ref === "string") {
       ref = $$(ref);
     }
@@ -277,14 +282,14 @@ export class Ref extends I.Record({ program: "", path: I.List() }) {
 }
 
 // An empty ref
-export const EMPTY_REF = new Ref();
+export const EMPTY_REF: Ref = new Ref();
 
 // Creates a Ref object. The argument can be:
 // - undefined (returns the ":" ref)
 // - string
 // - another ref
-export function $$(r?: any) {
-  let ast;
+export function $$(r: RefT) {
+  let ast: object;
 
   if (r instanceof Ref) {
     return r;

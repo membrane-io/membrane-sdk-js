@@ -502,423 +502,423 @@ import {
     });
   });
   
-  // describe('SchemaVisitor', () => {
-  //   it('traverses a simple object that matches the schema', () => {
-  //     const object = {
-  //       thing: {
-  //         at: {
-  //           field: 'some value',
-  //           computed: 'ok',
-  //           doSomething: 1,
-  //         }
-  //       }
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+  describe('SchemaVisitor', () => {
+    it('traverses a simple object that matches the schema', () => {
+      const object = {
+        thing: {
+          at: {
+            field: 'some value',
+            computed: 'ok',
+            doSomething: 1,
+          }
+        }
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('takes a schema traversal', () => {
-  //     const object = {
-  //       thing: {
-  //         at: {
-  //           field: 'some value',
-  //           computed: 'ok',
-  //           doSomething: 1,
-  //         }
-  //       },
-  //       ownThing: {
-  //         strList: [ 'one', 'two', 'three' ],
-  //         strListList: [ ['one', 'two'], ['three'] ],
-  //       }
-  //     };
-  //     const t0 = new SchemaTraversal(schema);
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(t0);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+    it('takes a schema traversal', () => {
+      const object = {
+        thing: {
+          at: {
+            field: 'some value',
+            computed: 'ok',
+            doSomething: 1,
+          }
+        },
+        ownThing: {
+          strList: [ 'one', 'two', 'three' ],
+          strListList: [ ['one', 'two'], ['three'] ],
+        }
+      };
+      const t0 = new SchemaTraversal(schema);
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(t0);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('takes a schema traversal that points to a list ', () => {
-  //     const object = [
-  //       { field: 'f1', computed: 'c1', doSomething: 1, },
-  //       { field: 'f2', computed: 'c2', doSomething: 2, },
-  //     ];
-  //     const t0 = new SchemaTraversal(schema);
-  //     t0.enterMember('thing');
-  //     t0.enterMember('many');
+    it('takes a schema traversal that points to a list ', () => {
+      const object = [
+        { field: 'f1', computed: 'c1', doSomething: 1, },
+        { field: 'f2', computed: 'c2', doSomething: 2, },
+      ];
+      const t0 = new SchemaTraversal(schema);
+      t0.enterMember('thing');
+      t0.enterMember('many');
   
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(t0);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(t0);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('takes a schema traversal that points to a ref', () => {
-  //     const object = {
-  //       ownThing: {
-  //         ownThingRef: $$('a:x') 
-  //       }
-  //     };
-  //     const t0 = new SchemaTraversal(schema);
-  //     t0.enterMember('ownThing');
-  //     t0.enterMember('ownThingRef');
+    it('takes a schema traversal that points to a ref', () => {
+      const object = {
+        ownThing: {
+          ownThingRef: $$('a:x') 
+        }
+      };
+      const t0 = new SchemaTraversal(schema);
+      t0.enterMember('ownThing');
+      t0.enterMember('ownThingRef');
   
-  //     const t1 = new ObjectTraversal(object.ownThing.ownThingRef);
-  //     const t2 = new SchemaVisitor(t0);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+      const t1 = new ObjectTraversal(object.ownThing.ownThingRef);
+      const t2 = new SchemaVisitor(t0);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('takes a schema traversal that points to a primitive type (string)', () => {
-  //     const object = 'someValue';
-  //     const t0 = new SchemaTraversal(schema);
-  //     t0.enterMember('ownThing');
-  //     t0.enterMember('field');
+    it('takes a schema traversal that points to a primitive type (string)', () => {
+      const object = 'someValue';
+      const t0 = new SchemaTraversal(schema);
+      t0.enterMember('ownThing');
+      t0.enterMember('field');
   
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(t0);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(t0);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('takes a schema traversal that points to a resolved ref (when allowed)', () => {
-  //     const object = {
-  //       ownThing: {
-  //         ownThingRef: {
-  //           float: 2,
-  //           bool: false,
-  //           thingRef: {
-  //             field: 'f2',
-  //             related: { many: [] },
-  //           }
-  //         },
-  //       }
-  //     };
-  //     const t0 = new SchemaTraversal(schema);
-  //     t0.enterMember('ownThing');
-  //     t0.enterMember('ownThingRef');
+    it('takes a schema traversal that points to a resolved ref (when allowed)', () => {
+      const object = {
+        ownThing: {
+          ownThingRef: {
+            float: 2,
+            bool: false,
+            thingRef: {
+              field: 'f2',
+              related: { many: [] },
+            }
+          },
+        }
+      };
+      const t0 = new SchemaTraversal(schema);
+      t0.enterMember('ownThing');
+      t0.enterMember('ownThingRef');
   
-  //     const t1 = new ObjectTraversal(object.ownThing.ownThingRef);
-  //     const t2 = new SchemaVisitor(t0, null, { allowResolvedRefs: true });
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+      const t1 = new ObjectTraversal(object.ownThing.ownThingRef);
+      const t2 = new SchemaVisitor(t0, null, { allowResolvedRefs: true });
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('throws if a field is not part of the schema', () => {
-  //     const object = {
-  //       thing: {
-  //         at: {
-  //           field: 'some value',
-  //           notInSchema: 'ha!',
-  //           doSomething: 1, // TODO: not verifying type
-  //         }
-  //       },
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow(`SchemaVisitor: Member "notInSchema" at path "thing.at" (Thing) not found in schema`);
-  //   })
+    it('throws if a field is not part of the schema', () => {
+      const object = {
+        thing: {
+          at: {
+            field: 'some value',
+            notInSchema: 'ha!',
+            doSomething: 1, // TODO: not verifying type
+          }
+        },
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow(`SchemaVisitor: Member "notInSchema" at path "thing.at" (Thing) not found in schema`);
+    })
   
-  //   it('throws if a Void field holds a value', () => {
-  //     const object = { ownThing: { void: {} } };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow();
-  //   });
+    it('throws if a Void field holds a value', () => {
+      const object = { ownThing: { void: {} } };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow();
+    });
   
-  //   it('throws if a Ref fields holds something other than a ref', () => {
-  //     const object = { ownThing: { voidRef: {} } };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow();
-  //   });
+    it('throws if a Ref fields holds something other than a ref', () => {
+      const object = { ownThing: { voidRef: {} } };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow();
+    });
   
-  //   it('Accepts an object in a Void* field (allowedResolvedRef = true)', () => {
-  //     const object = { ownThing: { voidRef: {} } };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema, null, { allowResolvedRefs: true });
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   });
+    it('Accepts an object in a Void* field (allowedResolvedRef = true)', () => {
+      const object = { ownThing: { voidRef: {} } };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema, null, { allowResolvedRefs: true });
+      expect(() => t1.traverse(t2)).not.toThrow();
+    });
   
-  //   it('traverses a void ref', () => {
-  //     const object = { ownThing: { voidRef: $$(':') } };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   });
+    it('traverses a void ref', () => {
+      const object = { ownThing: { voidRef: $$(':') } };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    });
   
-  //   it('throws if an Int field does not hold a number', () => {
-  //     const object = { thing: { at: { int: '' } }, };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected number at path "thing.at.int"');
-  //   })
+    it('throws if an Int field does not hold a number', () => {
+      const object = { thing: { at: { int: '' } }, };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected number at path "thing.at.int"');
+    })
   
-  //   it('throws if an Float field does not hold a number', () => {
-  //     const object = { thing: { at: { float: '' } }, };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected number at path "thing.at.float"');
-  //   })
+    it('throws if an Float field does not hold a number', () => {
+      const object = { thing: { at: { float: '' } }, };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected number at path "thing.at.float"');
+    })
   
-  //   it('throws if a Boolean field does not hold a boolean', () => {
-  //     const object = { thing: { at: { bool: '' } }, };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected boolean at path "thing.at.bool"');
-  //   })
+    it('throws if a Boolean field does not hold a boolean', () => {
+      const object = { thing: { at: { bool: '' } }, };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected boolean at path "thing.at.bool"');
+    })
   
-  //   it('throws if a String field does not hold a string', () => {
-  //     const object = { thing: { at: { field: true } }, };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected string at path "thing.at.field"');
-  //   })
+    it('throws if a String field does not hold a string', () => {
+      const object = { thing: { at: { field: true } }, };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected string at path "thing.at.field"');
+    })
   
-  //   it('throws if the number of nested arrays is less than the number of nested lists in the schema', () => {
-  //     const object = {
-  //       thing: {
-  //         lists: [{ field: 'value 1', }]
-  //       },
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected array at path "thing.lists.0"');
-  //   })
+    it('throws if the number of nested arrays is less than the number of nested lists in the schema', () => {
+      const object = {
+        thing: {
+          lists: [{ field: 'value 1', }]
+        },
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected array at path "thing.lists.0"');
+    })
   
-  //   it('throws if the number of nested arrays is more than the number of nested lists in the schema', () => {
-  //     const object = {
-  //       thing: {
-  //         lists: [
-  //           [
-  //             [
-  //               { field: 'value 1' }
-  //             ]
-  //           ]
-  //         ]
-  //       },
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected object at path "thing.lists.0.0"');
-  //   })
+    it('throws if the number of nested arrays is more than the number of nested lists in the schema', () => {
+      const object = {
+        thing: {
+          lists: [
+            [
+              [
+                { field: 'value 1' }
+              ]
+            ]
+          ]
+        },
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow('SchemaVisitor: Expected object at path "thing.lists.0.0"');
+    })
   
-  //   it('traverses an array/List correctly', () => {
-  //     const object = {
-  //       thing: {
-  //         many: [
-  //           {
-  //             field: '1',
-  //           },
-  //           {
-  //             field: '2',
-  //           }
-  //         ]
-  //       },
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+    it('traverses an array/List correctly', () => {
+      const object = {
+        thing: {
+          many: [
+            {
+              field: '1',
+            },
+            {
+              field: '2',
+            }
+          ]
+        },
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('traverses lists of lists', () => {
-  //     const object = {
-  //       thing: {
-  //         lists: [
-  //           [
-  //             {
-  //               field: 'value 1',
-  //             },
-  //             {
-  //               field: 'value 2',
-  //             }
-  //           ]
-  //         ]
-  //       },
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+    it('traverses lists of lists', () => {
+      const object = {
+        thing: {
+          lists: [
+            [
+              {
+                field: 'value 1',
+              },
+              {
+                field: 'value 2',
+              }
+            ]
+          ]
+        },
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('traverses nested lists', () => {
-  //     const object = {
-  //       thing: {
-  //         lists: [
-  //           [
-  //             {
-  //               field: 'value 1',
-  //               related: {
-  //                 many: [
-  //                   {
-  //                     bool: true,
-  //                     related: {
-  //                       many: [
-  //                         {
-  //                           int: 4,
-  //                         }
-  //                       ]
-  //                     }
-  //                   }
-  //                 ]
-  //               }
-  //             }
-  //           ]
-  //         ]
-  //       },
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   })
+    it('traverses nested lists', () => {
+      const object = {
+        thing: {
+          lists: [
+            [
+              {
+                field: 'value 1',
+                related: {
+                  many: [
+                    {
+                      bool: true,
+                      related: {
+                        many: [
+                          {
+                            int: 4,
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          ]
+        },
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    })
   
-  //   it('allows composition with another visitor', () => {
-  //     const object = {
-  //       thing: {
-  //         at: {
-  //           field: 'x',
-  //           computed: 'y',
-  //           doSomething: 10,
-  //         }
-  //       }
-  //     };
-  //     const t1 = new ObjectTraversal(object);
-  //     const t2 = new CountingVisitor();
-  //     const t3 = new SchemaVisitor(schema, t2);
-  //     expect(() => t1.traverse(t3)).not.toThrow();
-  //     expect(t2.total).toEqual(10);
-  //     expect(t2.enterCount).toEqual(6);
-  //     expect(t2.exitCount).toEqual(6);
-  //     expect(t2.beginCount).toEqual(1);
-  //     expect(t2.endCount).toEqual(1);
-  //   })
+    it('allows composition with another visitor', () => {
+      const object = {
+        thing: {
+          at: {
+            field: 'x',
+            computed: 'y',
+            doSomething: 10,
+          }
+        }
+      };
+      const t1 = new ObjectTraversal(object);
+      const t2 = new CountingVisitor();
+      const t3 = new SchemaVisitor(schema, t2);
+      expect(() => t1.traverse(t3)).not.toThrow();
+      expect(t2.total).toEqual(10);
+      expect(t2.enterCount).toEqual(6);
+      expect(t2.exitCount).toEqual(6);
+      expect(t2.beginCount).toEqual(1);
+      expect(t2.endCount).toEqual(1);
+    })
   
-  //   it('provides a schema related context to its sub-visitor', () => {
-  //     const t1 = new ObjectTraversal({});
-  //     const t2 = { enter: jest.fn() };
-  //     const t3 = new SchemaVisitor(schema, t2);
+    it('provides a schema related context to its sub-visitor', () => {
+      const t1 = new ObjectTraversal({});
+      const t2 = { enter: jest.fn() };
+      const t3 = new SchemaVisitor(schema, t2);
   
-  //     expect(() => t1.traverse(t3)).not.toThrow();
-  //     expect(t2.enter.mock.calls[0][3]).toHaveProperty('type')
-  //     expect(t2.enter.mock.calls[0][3]).toHaveProperty('schema')
-  //     expect(t2.enter.mock.calls[0][3]).toHaveProperty('wrappers')
-  //   })
+      expect(() => t1.traverse(t3)).not.toThrow();
+      expect(t2.enter.mock.calls[0][3]).toHaveProperty('type')
+      expect(t2.enter.mock.calls[0][3]).toHaveProperty('schema')
+      expect(t2.enter.mock.calls[0][3]).toHaveProperty('wrappers')
+    })
   
-  //   it('turns json refs object fields into Refs', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { $ref: 'a:b.c' },
-  //         many: [{ $ref: 'a:b.c' }, { $ref: 'a:b(x:[a:b]).c' }],
-  //       }
-  //     });
-  //     const output = {
-  //       thing: {
-  //         at: $$('a:b.c'),
-  //         many: [$$('a:b.c'), $$('a:b(x:[a:b]).c')]
-  //       }
-  //     };
+    it('turns json refs object fields into Refs', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { $ref: 'a:b.c' },
+          many: [{ $ref: 'a:b.c' }, { $ref: 'a:b(x:[a:b]).c' }],
+        }
+      });
+      const output = {
+        thing: {
+          at: $$('a:b.c'),
+          many: [$$('a:b.c'), $$('a:b(x:[a:b]).c')]
+        }
+      };
   
-  //     const t2 = new CloningVisitor();
-  //     const t3 = new SchemaVisitor(schema, t2);
-  //     expect(() => t1.traverse(t3)).not.toThrow();
-  //     expect(t2.result).toEqual(output);
-  //   })
+      const t2 = new CloningVisitor();
+      const t3 = new SchemaVisitor(schema, t2);
+      expect(() => t1.traverse(t3)).not.toThrow();
+      expect(t2.result).toEqual(output);
+    })
   
-  //   it('turns json refs scalar fields into Refs', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { field: { $ref: 'a:b.c' } },
-  //         many: [{ field: { $ref: 'a:b.c' } }],
-  //       },
-  //     });
-  //     const output = {
-  //       thing: {
-  //         at: { field: $$('a:b.c') },
-  //         many: [{ field: $$('a:b.c') }],
-  //       },
-  //     };
+    it('turns json refs scalar fields into Refs', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { field: { $ref: 'a:b.c' } },
+          many: [{ field: { $ref: 'a:b.c' } }],
+        },
+      });
+      const output = {
+        thing: {
+          at: { field: $$('a:b.c') },
+          many: [{ field: $$('a:b.c') }],
+        },
+      };
   
-  //     const t2 = new CloningVisitor();
-  //     const t3 = new SchemaVisitor(schema, t2);
-  //     expect(() => t1.traverse(t3)).not.toThrow();
-  //     expect(t2.result).toEqual(output);
-  //   })
+      const t2 = new CloningVisitor();
+      const t3 = new SchemaVisitor(schema, t2);
+      expect(() => t1.traverse(t3)).not.toThrow();
+      expect(t2.result).toEqual(output);
+    })
   
-  //   it('turns Ref fields (provided as json refs) into Refs', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { field: { $ref: 'a:b.c' } },
-  //         many: [{ field: { $ref: 'a:b.c' } }],
-  //       },
-  //     });
-  //     const output = {
-  //       thing: {
-  //         at: { field: $$('a:b.c') },
-  //         many: [{ field: $$('a:b.c') }],
-  //       },
-  //     };
+    it('turns Ref fields (provided as json refs) into Refs', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { field: { $ref: 'a:b.c' } },
+          many: [{ field: { $ref: 'a:b.c' } }],
+        },
+      });
+      const output = {
+        thing: {
+          at: { field: $$('a:b.c') },
+          many: [{ field: $$('a:b.c') }],
+        },
+      };
   
-  //     const t2 = new CloningVisitor();
-  //     const t3 = new SchemaVisitor(schema, t2);
-  //     expect(() => t1.traverse(t3)).not.toThrow();
-  //     expect(t2.result).toEqual(output);
-  //   })
+      const t2 = new CloningVisitor();
+      const t3 = new SchemaVisitor(schema, t2);
+      expect(() => t1.traverse(t3)).not.toThrow();
+      expect(t2.result).toEqual(output);
+    })
   
-  //   it('does not turn accept plain strings for Ref fields', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { stringRef: 'a:b.c' },
-  //         many: [{ stringRef: 'a:b.c' }],
-  //       },
-  //     });
-  //     const output = {
-  //       thing: {
-  //         at: { stringRef: $$('a:b.c') },
-  //         many: [{ stringRef: $$('a:b.c') }],
-  //       },
-  //     };
+    it('does not turn accept plain strings for Ref fields', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { stringRef: 'a:b.c' },
+          many: [{ stringRef: 'a:b.c' }],
+        },
+      });
+      const output = {
+        thing: {
+          at: { stringRef: $$('a:b.c') },
+          many: [{ stringRef: $$('a:b.c') }],
+        },
+      };
   
-  //     const t2 = new CloningVisitor();
-  //     const t3 = new SchemaVisitor(schema, t2);
-  //     expect(() => t1.traverse(t3)).toThrow('Expected ref at path "thing.at.stringRef"');
-  //   })
+      const t2 = new CloningVisitor();
+      const t3 = new SchemaVisitor(schema, t2);
+      expect(() => t1.traverse(t3)).toThrow('Expected ref at path "thing.at.stringRef"');
+    })
   
-  //   it('accepts refs in ref fields', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { stringRef: { $ref: 'a:b.c' } }
-  //       },
-  //     });
-  //     const output = {
-  //       thing: {
-  //         at: { stringRef: $$('a:b.c') },
-  //       },
-  //     };
+    it('accepts refs in ref fields', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { stringRef: { $ref: 'a:b.c' } }
+        },
+      });
+      const output = {
+        thing: {
+          at: { stringRef: $$('a:b.c') },
+        },
+      };
   
-  //     const t2 = new CloningVisitor();
-  //     const t3 = new SchemaVisitor(schema, t2);
-  //     expect(() => t1.traverse(t3)).not.toThrow();
-  //     expect(t2.result).toEqual(output);
-  //   })
+      const t2 = new CloningVisitor();
+      const t3 = new SchemaVisitor(schema, t2);
+      expect(() => t1.traverse(t3)).not.toThrow();
+      expect(t2.result).toEqual(output);
+    })
   
-  //   it('accepts null in a scalar field', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { int: null }
-  //       },
-  //     });
+    it('accepts null in a scalar field', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { int: null }
+        },
+      });
   
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).not.toThrow();
-  //   });
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).not.toThrow();
+    });
   
-  //   it('rejects ref fields which value is not a ref', () => {
-  //     const t1 = new ObjectTraversal({
-  //       thing: {
-  //         at: { stringRef: 'some string' }
-  //       },
-  //     });
+    it('rejects ref fields which value is not a ref', () => {
+      const t1 = new ObjectTraversal({
+        thing: {
+          at: { stringRef: 'some string' }
+        },
+      });
   
-  //     const t2 = new SchemaVisitor(schema);
-  //     expect(() => t1.traverse(t2)).toThrow();
-  //   })
-  // });
+      const t2 = new SchemaVisitor(schema);
+      expect(() => t1.traverse(t2)).toThrow();
+    })
+  });
   
   describe('CloningVisitor', () => {
     it('supports primitive types', () => {
@@ -1048,28 +1048,28 @@ import {
   })
   
   describe('Combinations of visitors', () => {
-    // it('supports schema -> clone', () => {
-    //   const input = {
-    //     thing: {
-    //       at: {
-    //         field: 'some value',
-    //         computed: 'x',
-    //         doSomething: 7,
-    //       }
-    //     }
-    //   };
-    //   const t1 = new ObjectTraversal(input);
-    //   const t2 = new CountingVisitor();
-    //   const t3 = new CloningVisitor(t2);
-    //   const t4 = new SchemaVisitor(schema, t3);
-    //   expect(() => t1.traverse(t4)).not.toThrow();
-    //   expect(t3.result).toEqual(input);
-    //   expect(t3.result).not.toBe(input);
-    //   expect(t2.total).toEqual(7);
-    //   expect(t2.enterCount).toEqual(6);
-    //   expect(t2.exitCount).toEqual(6);
-    //   expect(t2.beginCount).toEqual(1);
-    //   expect(t2.endCount).toEqual(1);
-    // });
+    it('supports schema -> clone', () => {
+      const input = {
+        thing: {
+          at: {
+            field: 'some value',
+            computed: 'x',
+            doSomething: 7,
+          }
+        }
+      };
+      const t1 = new ObjectTraversal(input);
+      const t2 = new CountingVisitor();
+      const t3 = new CloningVisitor(t2);
+      const t4 = new SchemaVisitor(schema, t3);
+      expect(() => t1.traverse(t4)).not.toThrow();
+      expect(t3.result).toEqual(input);
+      expect(t3.result).not.toBe(input);
+      expect(t2.total).toEqual(7);
+      expect(t2.enterCount).toEqual(6);
+      expect(t2.exitCount).toEqual(6);
+      expect(t2.beginCount).toEqual(1);
+      expect(t2.endCount).toEqual(1);
+    });
   });
   

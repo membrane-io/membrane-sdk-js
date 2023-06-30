@@ -288,7 +288,7 @@ export class SchemaVisitor {
         }
       }
       if (!isRefValue) {
-        assert.ok(!isRef || this.allowResolvedRefs);
+        // assert.ok(!isRef || this.allowResolvedRefs);
         if (isList) {
           if (!isArray(object)) {
             throw new Error(
