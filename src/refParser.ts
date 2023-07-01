@@ -1,16 +1,20 @@
+/* eslint-disable no-constant-condition */
 // TODO: Commenting assertions out because it breaks our hacky boilerplate building process
 // const assert = require('assert');
 
 const kMaxRefLength = 2 * 1024;
 
 export class RefSyntaxError extends Error {
-  constructor(ref, location, message) {
+  _location: number;
+  _ref: string;
+
+  constructor(ref: string, location: number, message: string) {
     super(message);
-    if (typeof ref !== 'string') {
-      throw new Error('Expected ref to be a string');
+    if (typeof ref !== "string") {
+      throw new Error("Expected ref to be a string");
     }
-    if (typeof location !== 'number' || Math.floor(location) !== location) {
-      throw new Error('Expected location to be an integer');
+    if (typeof location !== "number" || Math.floor(location) !== location) {
+      throw new Error("Expected location to be an integer");
     }
     this._location = location;
     this._ref = ref;
@@ -18,22 +22,27 @@ export class RefSyntaxError extends Error {
 }
 
 export class RefParser {
+  position: number;
+  str: string;
+  code: number;
+  char: string;
+
   constructor(str) {
-    if (typeof str !== 'string') {
-      throw new Error('Expected ref to be a string');
+    if (typeof str !== "string") {
+      throw new Error("Expected ref to be a string");
     }
     if (str.length > kMaxRefLength) {
       throw new Error(`Max ref length is currently capped at ${kMaxRefLength}`);
     }
     this.position = 0;
-    this.str = str || '';
+    this.str = str || "";
     this._updateChar();
   }
 
   _updateChar() {
     if (this.position >= this.str.length) {
       this.code = 0;
-      this.char = '';
+      this.char = "";
     } else {
       this.code = this.str.charCodeAt(this.position);
       this.char = this.str[this.position];
@@ -41,7 +50,7 @@ export class RefParser {
   }
 
   advance(node) {
-    if (typeof node === 'number') {
+    if (typeof node === "number") {
       this.position += node;
     } else {
       this.position = node.loc.end;
@@ -55,7 +64,8 @@ export class RefParser {
   }
 
   syntaxError(message) {
-    const m = message + ' at position ' + this.position + ' in "' + this.str + '"';
+    const m =
+      message + " at position " + this.position + ' in "' + this.str + '"';
     throw new RefSyntaxError(this.str, this.position, m);
   }
 
@@ -65,14 +75,14 @@ export class RefParser {
   }
 
   parseInnerRef() {
-    if (this.char !== '[') {
+    if (this.char !== ("[" as any)) {
       throw this.syntaxError(`Expected '['`);
     }
     this.advance(1);
 
     const result = this.parseRef();
 
-    if (this.char !== ']') {
+    if (this.char !== ("]" as any)) {
       throw this.syntaxError(`Expected ']'`);
     }
     this.advance(1);
@@ -84,14 +94,14 @@ export class RefParser {
 
     // At this point we must be in a colon or the end of the ref
     let path;
-    if (this.char === ':') {
+    if (this.char === ":") {
       this.advance(1);
       path = this.parsePath();
-    // } else if (this.isEndOfRef()) {
-    //   path = {
-    //     value: [],
-    //     loc: { start: 0, end: 0 },
-    //   };
+      // } else if (this.isEndOfRef()) {
+      //   path = {
+      //     value: [],
+      //     loc: { start: 0, end: 0 },
+      //   };
     } else {
       throw this.syntaxError(`Expected ":"`);
     }
@@ -106,12 +116,12 @@ export class RefParser {
     if (isLowerCase(this.code) || isDigit(this.code) || this.code === _POUND) {
       name = this.parseProgramIdentifier();
     } else {
-      name = { value: '' };
+      name = { value: "" };
     }
 
     return {
       loc: { start, end: this.position },
-      value: name.value
+      value: name.value,
     };
   }
 
@@ -136,7 +146,11 @@ export class RefParser {
   // or '#' for tags
   parseProgramIdentifier() {
     const start = this.position;
-    if (!isLowerCase(this.code) && !isDigit(this.code) && !this.code === _POUND) {
+    if (
+      !isLowerCase(this.code) &&
+      !isDigit(this.code) &&
+      !this.code === (_POUND as any)
+    ) {
       throw this.syntaxError(`Expected program identifier`);
     }
 
@@ -170,8 +184,7 @@ export class RefParser {
   }
 
   isEndOfRef() {
-    return this.position >= this.str.length ||
-      this.code === _BRACKETCLOSE;
+    return this.position >= this.str.length || this.code === _BRACKETCLOSE;
   }
 
   parsePath() {
@@ -179,7 +192,7 @@ export class RefParser {
 
     const value = [];
     while (!this.isEndOfRef()) {
-      if (this.char === '.') {
+      if (this.char === ".") {
         this.advance(1);
       } else if (this.position !== start) {
         const last = value[value.length - 1];
@@ -189,7 +202,7 @@ export class RefParser {
         throw this.syntaxError(`Expected '.' or end of ref`);
       }
 
-      const elem = {};
+      const elem: any = {};
       elem.name = this.parseIdentifier();
       elem.args = this.tryParseArgs();
       value.push(elem);
@@ -202,16 +215,16 @@ export class RefParser {
   tryParseArgs() {
     const start = this.position;
     const value = [];
-    if (this.char !== '(') {
+    if (this.char !== "(") {
       return { start, end: start, value };
     }
     this.advance(1);
 
     while (true) {
-      let arg = {};
+      let arg: any = {};
       arg.name = this.parseIdentifier();
 
-      if (this.char !== ':') {
+      if (this.char !== (":" as any)) {
         throw this.syntaxError(`Expected ':'`);
       }
       this.advance(1);
@@ -223,18 +236,18 @@ export class RefParser {
       this.advance(arg.value);
       value.push(arg);
 
-      if (this.char === ')') {
+      if (this.char === (")" as any)) {
         // We've reached the end of this argument list
         break;
       }
 
-      if (this.char !== ',') {
+      if (this.char !== ("," as any)) {
         throw this.syntaxError(`Expected ',' or ')'`);
       }
       this.advance(1);
     }
 
-    if (this.char !== ')') {
+    if (this.char !== (")" as any)) {
       throw this.syntaxError(`Expected ')'`);
     }
     this.advance(1);
@@ -249,16 +262,16 @@ export class RefParser {
     let type;
 
     if (this.code === _BRACKETOPEN) {
-      type = 'ref';
+      type = "ref";
       value = this.parseInnerRef();
     } else if (this.code === _DOUBLEQUOTES) {
-      type = 'string';
+      type = "string";
       value = this.parseStringLiteral();
     } else if (isNumberChar(this.code)) {
-      type = 'number';
+      type = "number";
       value = this.parseNumberLiteral();
-    } else if (this.lookAhead('true') || this.lookAhead('false')) {
-      type = 'boolean';
+    } else if (this.lookAhead("true") || this.lookAhead("false")) {
+      type = "boolean";
       value = this.parseBooleanLiteral();
     } else {
       return null;
@@ -280,12 +293,13 @@ export class RefParser {
     // TODO: this could be done with buffers but in the general case it
     // shouldn't generate too much garbage unless there are a lot of
     // backslashes. Concatenating strings is easier though
-    let value = '';
+    let value = "";
     let pieceStart = this.position;
     while (
       this.position < this.str.length &&
       this.code !== 0 &&
-      this.code !== 0x000A && this.code !== 0x000D &&
+      this.code !== 0x000a &&
+      this.code !== 0x000d &&
       this.code !== _DOUBLEQUOTES
     ) {
       if (this.code < 0x0020 && this.code !== 0x0009) {
@@ -298,15 +312,32 @@ export class RefParser {
         // Skip the backslash
         this.advance(1);
         switch (this.code) {
-          case 34: value += '"'; break;
-          case 47: value += '/'; break;
-          case 92: value += '\\'; break;
-          case 98: value += '\b'; break;
-          case 102: value += '\f'; break;
-          case 110: value += '\n'; break;
-          case 114: value += '\r'; break;
-          case 116: value += '\t'; break;
+          case 34:
+            value += '"';
+            break;
+          case 47:
+            value += "/";
+            break;
+          case 92:
+            value += "\\";
+            break;
+          case 98:
+            value += "\b";
+            break;
+          case 102:
+            value += "\f";
+            break;
+          case 110:
+            value += "\n";
+            break;
+          case 114:
+            value += "\r";
+            break;
+          case 116:
+            value += "\t";
+            break;
           case 117: // u
+            // eslint-disable-next-line no-case-declarations
             const charCode = uniCharCode(
               this.str.charCodeAt(this.position + 1),
               this.str.charCodeAt(this.position + 2),
@@ -314,13 +345,18 @@ export class RefParser {
               this.str.charCodeAt(this.position + 4)
             );
             if (charCode < 0) {
-              throw this.syntaxError('Invalid character escape sequence: ' + `\\u${this.src.slice(this.position + 1, this.position + 5)}.`);
+              throw this.syntaxError(
+                "Invalid character escape sequence: " +
+                  `\\u${this.str.slice(this.position + 1, this.position + 5)}.`
+              );
             }
             value += String.fromCharCode(charCode);
             this.advance(4);
             break;
           default:
-            throw this.syntaxError(`Invalid character escape sequence: \\${this.char}.`);
+            throw this.syntaxError(
+              `Invalid character escape sequence: \\${this.char}.`
+            );
         }
 
         // Skip one more the get out of the escape sequence
@@ -353,7 +389,9 @@ export class RefParser {
     if (this.code === _0) {
       this.advance(1);
       if (this.code >= 48 && this.code <= 57) {
-        throw this.syntaxError(`Invalid number, unexpected digit after 0: ${this.char}.`);
+        throw this.syntaxError(
+          `Invalid number, unexpected digit after 0: ${this.char}.`
+        );
       }
     } else {
       this.skipDigits();
@@ -383,19 +421,21 @@ export class RefParser {
       } while (this.code >= _0 && this.code <= _9);
       return;
     }
-    throw this.syntaxError(`Invalid number, expected digit but got: ${this.char}.`);
+    throw this.syntaxError(
+      `Invalid number, expected digit but got: ${this.char}.`
+    );
   }
 
   parseBooleanLiteral() {
     let start = this.position;
     this.advance(4);
 
-    if (this.str.substring(start, this.position) === 'true') {
+    if (this.str.substring(start, this.position) === "true") {
       return true;
     }
 
     this.advance(1);
-    if (this.str.substring(start, this.position) === 'false') {
+    if (this.str.substring(start, this.position) === "false") {
       return false;
     }
 
@@ -403,7 +443,7 @@ export class RefParser {
   }
 }
 
-const _DOUBLEQUOTES = "\"".charCodeAt(0);
+const _DOUBLEQUOTES = '"'.charCodeAt(0);
 const _BACKSLASH = "\\".charCodeAt(0);
 const _PERIOD = ".".charCodeAt(0);
 const _PLUS = "+".charCodeAt(0);
@@ -438,7 +478,9 @@ function isNumberChar(charCode) {
 }
 
 function uniCharCode(a, b, c, d) {
-  return char2hex(a) << 12 | char2hex(b) << 8 | char2hex(c) << 4 | char2hex(d);
+  return (
+    (char2hex(a) << 12) | (char2hex(b) << 8) | (char2hex(c) << 4) | char2hex(d)
+  );
 }
 
 function isUnderscore(charCode) {
@@ -446,15 +488,20 @@ function isUnderscore(charCode) {
 }
 
 function char2hex(a) {
-  return (
-    a >= 48 && a <= 57 ? a - 48 : // 0-9
-    a >= 65 && a <= 70 ? a - 55 : // A-F
-    a >= 97 && a <= 102 ? a - 87 : // a-f
-    -1
-  );
+  return a >= 48 && a <= 57
+    ? a - 48 // 0-9
+    : a >= 65 && a <= 70
+    ? a - 55 // A-F
+    : a >= 97 && a <= 102
+    ? a - 87 // a-f
+    : -1;
 }
 
 function isIdentifierChar(charCode) {
-  return isUpperCase(charCode) || isLowerCase(charCode) || isDigit(charCode) || isUnderscore(charCode);
+  return (
+    isUpperCase(charCode) ||
+    isLowerCase(charCode) ||
+    isDigit(charCode) ||
+    isUnderscore(charCode)
+  );
 }
-

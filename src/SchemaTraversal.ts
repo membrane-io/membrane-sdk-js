@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from "assert";
 import {
   $$,
   isPrimitiveTypeName,
@@ -6,26 +6,34 @@ import {
   getInnerType,
   setInnerType,
   isObject,
-} from '.';
+} from ".";
 
-type Typed = { }
+type Typed = object;
 
 const _primitiveSchema = {
-  id: '',
-  name: 'primitives',
+  id: "",
+  name: "primitives",
   types: [
-    { name: 'Int' },
-    { name: 'Float' },
-    { name: 'String' },
-    { name: 'Boolean' },
-    { name: 'Void' },
+    { name: "Int" },
+    { name: "Float" },
+    { name: "String" },
+    { name: "Boolean" },
+    { name: "Void" },
   ],
 };
 
 // TODO: make this immutable? Yes please
 // TODO: schema traversals that start on primitives are not supported
 export default class SchemaTraversal {
-  constructor(schema, rootType: string | Typed = 'Root') {
+  schema: any;
+  primitiveSchema: any;
+  imports: any;
+  context: any;
+  rootSchema: any;
+  rootType: any;
+  rootWrappers: any;
+
+  constructor(schema, rootType: string | Typed = "Root") {
     this.schema = schema;
     this.primitiveSchema = _primitiveSchema;
     this.imports = schema.imports || [];
@@ -36,7 +44,7 @@ export default class SchemaTraversal {
     let rootTypeName;
     let wrappers;
     // console.log('ROOT TYPE', rootType);
-    if (typeof rootType === 'object') {
+    if (typeof rootType === "object") {
       const unwrapped = this._unwrapTyped(rootType);
       // console.log('UNWRAPPED', unwrapped);
       wrappers = unwrapped.wrappers;
@@ -44,14 +52,21 @@ export default class SchemaTraversal {
     } else {
       rootTypeName = rootType;
     }
-    assert.equal(typeof rootTypeName, 'string', 'rootType must be a string or typed');
+    assert.equal(
+      typeof rootTypeName,
+      "string",
+      "rootType must be a string or typed"
+    );
 
     // console.log('ROOT TYPE NAME', rootTypeName);
-    const { typeName, schema: rootSchema } = this._getTypeNameAndSchema(rootTypeName);
+    const { typeName, schema: rootSchema } =
+      this._getTypeNameAndSchema(rootTypeName);
     const type = rootSchema.types.find((t) => t.name === typeName);
 
     if (type === undefined) {
-      throw new Error(`Failed to find type "${typeName}" for traversal in the provided schema`);
+      throw new Error(
+        `Failed to find type "${typeName}" for traversal in the provided schema`
+      );
     }
 
     // Keep track of this so that we can push the root again
@@ -90,11 +105,11 @@ export default class SchemaTraversal {
 
   getTyped() {
     // TODO: HACK: Events don't have a type. Returning Ref for now
-    const { schema, type = { name: 'String' } } = this.getContext();
+    const { schema, type = { name: "String" } } = this.getContext();
     let typeName;
-    if (type.name.indexOf(':') < 0) {
+    if (type.name.indexOf(":") < 0) {
       if (schema && schema !== this.schema && !isPrimitiveTypeName(type.name)) {
-        typeName = schema.id + ':' + type.name;
+        typeName = schema.id + ":" + type.name;
       } else {
         typeName = type.name;
       }
@@ -102,7 +117,7 @@ export default class SchemaTraversal {
       typeName = type.name;
     }
 
-    let result = { type: typeName };
+    let result: any = { type: typeName };
     const wrappers = this.getWrappers();
     for (let i = wrappers.length - 1; i >= 0; --i) {
       result = { type: wrappers[i], ofType: result };
@@ -110,14 +125,15 @@ export default class SchemaTraversal {
     return result;
   }
 
-  getScalarFields(filter = {}) {
+  getScalarFields(filter: any = {}) {
     if (filter.fields === undefined) {
       filter.fields = true;
     }
-    const { fields = [], computedFields = [] } = this.getType();
+    const { fields = [] } = this.getType();
     return [
-      ...(filter.fields ? fields.filter((f) => isPrimitiveTypeName(getInnerType(f))) : []),
-      ...(filter.computed ? computedFields.filter((f) => isPrimitiveTypeName(getInnerType(f))) : []),
+      ...(filter.fields
+        ? fields.filter((f) => isPrimitiveTypeName(getInnerType(f)))
+        : []),
     ];
   }
 
@@ -127,14 +143,16 @@ export default class SchemaTraversal {
     const innerType = getInnerType(param);
 
     let typeName;
-    if (innerType.indexOf(':') < 0 && schema && schema !== this.schema) {
-      typeName = schema.id + ':' + innerType;
+    if (innerType.indexOf(":") < 0 && schema && schema !== this.schema) {
+      typeName = schema.id + ":" + innerType;
     } else {
       typeName = innerType;
     }
 
     // Wrap the inner type in its wrappers
-    let result = JSON.parse(JSON.stringify({ type: param.type, ofType: param.ofType }));
+    let result = JSON.parse(
+      JSON.stringify({ type: param.type, ofType: param.ofType })
+    );
     setInnerType(result, typeName);
     return result;
   }
@@ -168,26 +186,26 @@ export default class SchemaTraversal {
 
   get fullTypeName() {
     const type = this.getType();
-    return type && (this.typePrefix + type.name);
+    return type && this.typePrefix + type.name;
   }
 
   get paramsFullTypeName() {
     const { type, schema } = this.getParamsTypeAndSchema();
     let prefix;
     if (schema !== this.schema && schema !== this.primitiveSchema) {
-      prefix = schema.id + ':';
+      prefix = schema.id + ":";
     } else {
-      prefix = '';
+      prefix = "";
     }
-    return type && (prefix + type.name);
+    return type && prefix + type.name;
   }
 
   get typePrefix() {
     const schema = this.getSchema();
     if (schema !== this.schema && schema !== this.primitiveSchema) {
-      return schema.id + ':';
+      return schema.id + ":";
     }
-    return '';
+    return "";
   }
 
   get type() {
@@ -214,12 +232,12 @@ export default class SchemaTraversal {
 
   isList() {
     const { wrappers } = this.context[this.context.length - 1];
-    return Boolean(wrappers && wrappers[0] === 'List');
+    return Boolean(wrappers && wrappers[0] === "List");
   }
 
   isRef() {
     const { wrappers } = this.context[this.context.length - 1];
-    return Boolean(wrappers && wrappers[0] === 'Ref');
+    return Boolean(wrappers && wrappers[0] === "Ref");
   }
 
   // Gets the wrappers for this field's type. A potentially empty array of
@@ -243,7 +261,7 @@ export default class SchemaTraversal {
   }
 
   getStateString() {
-    return this.context.map((e) => e.name || '').join('.');
+    return this.context.map((e) => e.name || "").join(".");
   }
 
   _getMemberAndKind(name) {
@@ -252,30 +270,30 @@ export default class SchemaTraversal {
     let memberKind;
     if (type.fields) {
       typed = type.fields.find((f) => f.name === name);
-      memberKind = 'field';
+      memberKind = "field";
     }
-    if (typed === undefined && type.computedFields) {
-      typed = type.computedFields.find((f) => f.name === name);
-      memberKind = 'computedField';
-    }
+    // if (typed === undefined && type.computedFields) {
+    //   typed = type.computedFields.find((f) => f.name === name);
+    //   memberKind = "computedField";
+    // }
     if (typed === undefined && type.events) {
       typed = type.events.find((f) => f.name === name);
       // HACK: some older programs don't define a type for events. This is how
       // we make it backwards-compatible. Can be removed in the future
       if (typed && !typed.type) {
-        typed.type = 'Void';
+        typed.type = "Void";
       }
-      memberKind = 'event';
+      memberKind = "event";
     }
     if (typed === undefined && type.actions) {
       typed = type.actions.find((f) => f.name === name);
-      memberKind = 'action';
+      memberKind = "action";
     }
     return { typed, memberKind };
   }
 
-  _getTypeNameAndSchema(rawTypeName: string, context) {
-    const colon = rawTypeName.indexOf(':');
+  _getTypeNameAndSchema(rawTypeName?: string, context?) {
+    const colon = rawTypeName.indexOf(":");
     let schema;
     let typeName;
     if (colon <= 0) {
@@ -290,9 +308,11 @@ export default class SchemaTraversal {
       typeName = rawTypeName;
     } else {
       const importName = rawTypeName.substr(0, colon);
-      schema = this.imports.find((i) => i.id === importName || i.name === importName);
+      schema = this.imports.find(
+        (i) => i.id === importName || i.name === importName
+      );
       if (!schema) {
-        throw new Error('Import not found in schema');
+        throw new Error("Import not found in schema");
       }
       typeName = rawTypeName.substr(colon + 1);
     }
@@ -307,7 +327,7 @@ export default class SchemaTraversal {
     let ofType = typed.ofType;
     while (isWrapperTypeName(innerType)) {
       wrappers.push(innerType);
-      if (typeof ofType === 'string') {
+      if (typeof ofType === "string") {
         innerType = ofType;
         ofType = undefined;
       } else {
@@ -316,7 +336,7 @@ export default class SchemaTraversal {
       }
     }
 
-    if (typeof innerType === 'object') {
+    if (typeof innerType === "object") {
       innerType = innerType.type;
     }
     assert.ok(!isWrapperTypeName(innerType), `Type wrappers require an ofType`);
@@ -324,7 +344,7 @@ export default class SchemaTraversal {
     return { wrappers, innerType };
   }
 
-  _getTypedInfo(typed, context) {
+  _getTypedInfo(typed?, context?) {
     const { wrappers, innerType } = this._unwrapTyped(typed);
     const { schema, typeName } = this._getTypeNameAndSchema(innerType, context);
 
@@ -351,12 +371,12 @@ export default class SchemaTraversal {
 
   // Enters the member in the current type with the provided name. Returns false
   // if there is no member with the provided name
-  enterMember(name, args) {
-    if (typeof name !== 'string' || name.length === 0) {
-      throw new Error('Expected member name to be a non-empty string');
+  enterMember(name?, args?) {
+    if (typeof name !== "string" || name.length === 0) {
+      throw new Error("Expected member name to be a non-empty string");
     }
     if (args && !isObject(args)) {
-      throw new Error('Expected args to be an object');
+      throw new Error("Expected args to be an object");
     }
     const { typed, memberKind } = this._getMemberAndKind(name);
     if (!typed) {
@@ -366,12 +386,17 @@ export default class SchemaTraversal {
     let info;
     info = this._getTypedInfo(typed);
 
-    this.context.push({ memberKind, member: typed, args, ...info});
+    this.context.push({ memberKind, member: typed, args, ...info });
     return true;
   }
 
   _pushRoot() {
-    this.context.push({ isRoot: true, schema: this.rootSchema, type: this.rootType, wrappers: this.rootWrappers || [] });
+    this.context.push({
+      isRoot: true,
+      schema: this.rootSchema,
+      type: this.rootType,
+      wrappers: this.rootWrappers || [],
+    });
   }
 
   enterRef(refOrStr) {
@@ -400,7 +425,7 @@ export default class SchemaTraversal {
       }
     }
 
-    let ref = $$(':');
+    let ref = $$(":");
     for (i += 1; i < context.length; ++i) {
       ref = ref.push(context[i].member.name, context[i].args);
     }
@@ -408,7 +433,7 @@ export default class SchemaTraversal {
   }
 
   enterParam(name) {
-    const { member } = this.getContext(name);
+    const { member } = this.getContext();
     if (!member) {
       return false;
     }
@@ -425,10 +450,16 @@ export default class SchemaTraversal {
       return false;
     }
 
-    assert.ok(this.context.length >= 2, 'Unexpected enter param before entering a member first');
-    const info = this._getTypedInfo(typed, this.context[this.context.length - 2]);
+    assert.ok(
+      this.context.length >= 2,
+      "Unexpected enter param before entering a member first"
+    );
+    const info = this._getTypedInfo(
+      typed,
+      this.context[this.context.length - 2]
+    );
 
-    this.context.push({ param: typed, ...info});
+    this.context.push({ param: typed, ...info });
     return true;
   }
 
@@ -436,4 +467,3 @@ export default class SchemaTraversal {
     return this.context.pop();
   }
 }
-

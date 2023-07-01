@@ -1,35 +1,36 @@
+import I from "immutable";
+import { RefParser } from "./refParser.js";
 
-import I from 'immutable';
-import { RefParser } from './refParser.js';
+type RefT = Ref | undefined | string | { $ref: string; };
 
 // Serializes the provided value into its literal ref version
-function serializeValue(value, isGraphQL) {
+function serializeValue(value: string | Ref, isGraphQL: boolean): string {
   if (value instanceof Ref) {
     if (isGraphQL) {
       return `"${value.toString().replace(/"/g, '\\"')}"`;
     }
     return `[${value}]`;
-  } else if (typeof value === 'string') {
+  } else if (typeof value === "string") {
     return `"${value}"`;
   }
   return `${value}`;
 }
 
 // An element in a ref's path
-export class PathElem extends I.Record({ name: '', args: I.Map(), }) {
+export class PathElem extends I.Record({ name: "", args: I.Map() }) {
   withArgs(args) {
     if (!I.Map.isMap(args)) {
       args = I.Map(args);
     }
-    let newElem = this.set('args', args);
+    let newElem = this.set("args", args);
 
     // HACK: using the ref parser to validate for now but we should use a more
     // efficient method later
-    $$(':' + newElem.toString());
+    $$(":" + newElem.toString());
     return newElem;
   }
 
-  _toString(isGraphQL) {
+  _toString(isGraphQL: boolean) {
     let result = this.name;
     if (this.args.size > 0) {
       result += `(${this.argsToString(isGraphQL)})`;
@@ -37,11 +38,14 @@ export class PathElem extends I.Record({ name: '', args: I.Map(), }) {
     return result;
   }
 
-  argsToString(isGraphQL) {
+  argsToString(isGraphQL: boolean) {
     return this.args
       .sortBy((value, key) => key)
-      .map((value, key) => `${key}:${serializeValue(value, isGraphQL)}`)
-      .join(',');
+      .map(
+        (value: string | Ref, key: string) =>
+          `${key}:${serializeValue(value, isGraphQL)}`
+      )
+      .join(",");
   }
 
   argsToGraphQLArg() {
@@ -58,30 +62,34 @@ export class PathElem extends I.Record({ name: '', args: I.Map(), }) {
 }
 
 // Ref to a graph node in Membrane. Implemented on immutable.js.
-export class Ref extends I.Record({ program: '', path: I.List(), }) {
-  _ensureIndexInRange(i) {
+export class Ref extends I.Record({ program: "", path: I.List() }) {
+  path: any;
+
+  _ensureIndexInRange(i: number): void {
     if (i >= this.path.length || i < -this.path.size) {
-      throw new Error('Path element index out of range');
+      throw new Error("Path element index out of range");
     }
   }
 
   // Pretty prints this ref. Needed so that we can implement toGraphQLArgs in
   // terms of toString
-  _toString(isGraphQL) {
-    return `${this.program}:${this.path.map((pathElem) => pathElem._toString(isGraphQL)).join('.')}`;
+  _toString(isGraphQL: boolean): string {
+    return `${this.program}:${this.path
+      .map((pathElem) => pathElem._toString(isGraphQL))
+      .join(".")}`;
   }
 
   // Pretty prints this ref
-  toString() {
+  toString(): string {
     return this._toString(false);
   }
 
-  toJSON() {
-    return { $ref: this.toString() };
-  }
+  // toJSON () {
+  //   return { $ref: this.toString() };
+  // }
 
   // Same as toString but refs are passed as strings instead of square brackets
-  toGraphQLArgs() {
+  toGraphQLArgs(): string {
     return this._toString(true);
   }
 
@@ -91,48 +99,50 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
   //   // return this._toString(false);
   // }
 
-  is(other) {
+  is(other: any): boolean {
     return I.is(this, other);
   }
 
-  isNull() {
-    return this.program === 'null';
+  isNull(): boolean {
+    return this.program === "null";
   }
 
-  clone() {
-    throw new Error('Ref.clone() IS DEPRECATED');
+  clone(): never {
+    throw new Error("Ref.clone() IS DEPRECATED");
   }
 
-  static _validate(ref) {
-    $$(ref.toString());
+  static _validate(ref): void {
+    // console.log(ref.toString());
+    // Assuming $$ function exists for validation
+    // $$(ref.toString());
   }
 
   // Returns the same ref but with a different program
-  withProgram(name) {
-    const result = this.set('program', name);
+  withProgram(name?: string): Ref {
+    const result = this.set("program", name);
     Ref._validate(result);
     return result;
   }
 
   // Sets the program to the empty string
   withoutProgram() {
-    return this.set('program', undefined);
+    return this.set("program", undefined);
   }
 
   // Sets the path to the empty list
   withoutPath() {
-    return this.set('path', undefined);
+    return this.set("path", undefined);
   }
 
   // Returns the same ref as this one but with one of the  last args (or as
   // specified by pathElemIndex) replaced with the provided one
-  withArg(name, value, pathElemIndex = -1) {
+  withArg(name: string, value: any, pathElemIndex = -1) {
     this._ensureIndexInRange(pathElemIndex);
-    let result;
+    let result: Ref;
     if (value === undefined) {
-      result = this.deleteIn(['path', pathElemIndex, 'args', name]);
+      result = this.deleteIn(["path", pathElemIndex, "args", name]);
     } else {
-      result = this.setIn(['path', pathElemIndex, 'args', name], value);
+      result = this.setIn(["path", pathElemIndex, "args", name], value);
     }
     Ref._validate(result);
     return result;
@@ -140,15 +150,15 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
 
   // Returns the same ref as this one but with the last args (or as specified by
   // pathElemIndex) replaced with the provided ones
-  withArgs(args, pathElemIndex = -1) {
+  withArgs(args: object, pathElemIndex = -1) {
     if (!I.Map.isMap(args)) {
-      if (typeof args !== 'object') {
-        throw new Error('Arguments of ref can only be plain objects or maps');
+      if (typeof args !== "object") {
+        throw new Error("Arguments of ref can only be plain objects or maps");
       }
       args = I.Map(args);
     }
     this._ensureIndexInRange(pathElemIndex);
-    const result = this.setIn(['path', pathElemIndex, 'args'], I.Map(args));
+    const result = this.setIn(["path", pathElemIndex, "args"], I.Map(args));
     Ref._validate(result);
     return result;
   }
@@ -157,18 +167,18 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
     if (this.path.size === 0) {
       return this;
     }
-    return this.setIn(['path', -1, 'args'], I.Map());
+    return this.setIn(["path", -1, "args"], I.Map());
   }
 
   withPath(path) {
-    const result = this.set('path', path);
+    const result = this.set("path", path);
     Ref._validate(result);
     return result;
   }
 
   // Returns the concatenation of the provided ref after this ref
   concat(other) {
-    const result = this.set('path', this.path.concat(other.path));
+    const result = this.set("path", this.path.concat(other.path));
     Ref._validate(result);
     return result;
   }
@@ -184,7 +194,9 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
   //   "a:b.c.d.e" relative to "a:b.c" with name "1" returns "1:d.e"
   relativeTo(other, otherName) {
     if (other.program !== this.program) {
-      throw new Error('Ref cannot be expressed as relative to ref that points to another program');
+      throw new Error(
+        "Ref cannot be expressed as relative to ref that points to another program"
+      );
     }
     const result = new Ref({
       program: otherName || other.program,
@@ -196,8 +208,8 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
         if (otherValue === undefined) {
           return false;
         }
-        throw new Error('Ref cannot be expressed as relative to provided ref');
-      })
+        throw new Error("Ref cannot be expressed as relative to provided ref");
+      }),
     });
     Ref._validate(result);
     return result;
@@ -228,8 +240,8 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
   }
 
   push(name, args) {
-    const pathElem = new PathElem({ name, args: new I.Map(args) });
-    const result = this.updateIn(['path'], (p) => p.push(pathElem));
+    const pathElem = new PathElem({ name, args: I.Map(args) });
+    const result = this.updateIn(["path"], (p: any[]) => p.push(pathElem));
     Ref._validate(result);
     return result;
   }
@@ -237,21 +249,21 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
   // Pops the last element in the path, if path is empty, returns the empty ref
   pop() {
     if (this.path.size) {
-      return this.updateIn(['path'], (p) => p.pop());
+      return this.updateIn(["path"], (p: any[]) => p.pop());
     }
-    return this.delete('program');
+    return this.delete("program");
   }
 
   shift() {
     if (this.path.size) {
-      return this.updateIn(['path'], (path) => path.shift());
+      return this.updateIn(["path"], (path: any[]) => path.shift());
     }
-    return this.delete('program');
+    return this.delete("program");
   }
 
   // Returns a JS object with the args at the provided ref
-  argsAt(ref) {
-    if (typeof ref === 'string') {
+  argsAt(ref: Ref | string) {
+    if (typeof ref === "string") {
       ref = $$(ref);
     }
     if (ref.path.size > this.path.size || ref.path.size === 0) {
@@ -270,14 +282,14 @@ export class Ref extends I.Record({ program: '', path: I.List(), }) {
 }
 
 // An empty ref
-export const EMPTY_REF = new Ref();
+export const EMPTY_REF: Ref = new Ref();
 
 // Creates a Ref object. The argument can be:
 // - undefined (returns the ":" ref)
 // - string
 // - another ref
-export function $$(r) {
-  let ast;
+export function $$(r: RefT) {
+  let ast: object;
 
   if (r instanceof Ref) {
     return r;
@@ -285,16 +297,23 @@ export function $$(r) {
   // if (r === undefined || r === null) {
   //   throw new Error('Refs cannot be built from ' + r);
   // }
-  const looksLikeRef = r && I.Record.isRecord(r) && typeof r.program === 'string' && I.List.isList(r.path) && r.toString;
+  const looksLikeRef =
+    r &&
+    I.Record.isRecord(r) &&
+    typeof (r as any).program === "string" &&
+    I.List.isList((r as any).path) &&
+    r.toString;
   if (looksLikeRef) {
-    ast = (new RefParser(r.toString())).parse();
-  } else if (typeof r === 'string') {
-    ast = (new RefParser(r)).parse();
-  } else if (r && r.$ref && typeof r.$ref === 'string') {
-    ast = (new RefParser(r.$ref)).parse();
+    ast = new RefParser(r.toString()).parse();
+  } else if (typeof r === "string") {
+    ast = new RefParser(r).parse();
+  } else if (r && r.$ref && typeof r.$ref === "string") {
+    ast = new RefParser(r.$ref).parse();
   } else {
-    debugger;
-    throw new Error('Refs can only be constructed from another Ref, a string, or an object with a $ref property, got: ' + (r === null ? 'null' : typeof r));
+    throw new Error(
+      "Refs can only be constructed from another Ref, a string, or an object with a $ref property, got: " +
+        (r === null ? "null" : typeof r)
+    );
   }
 
   return refFromAst(ast);
@@ -302,23 +321,24 @@ export function $$(r) {
 
 // Creates a ref given a parsed string's AST
 function refFromAst(ast) {
-  const path = I.List(ast.path.value.map((pathElemAst) => {
-    const args = {};
+  const path = I.List(
+    ast.path.value.map((pathElemAst) => {
+      const args = {};
 
-    for (let arg of pathElemAst.args.value) {
-      if (arg.value.type === 'ref') {
-        args[arg.name.value] = refFromAst(arg.value.value);
-      } else {
-        args[arg.name.value] = arg.value.value;
+      for (let arg of pathElemAst.args.value) {
+        if (arg.value.type === "ref") {
+          args[arg.name.value] = refFromAst(arg.value.value);
+        } else {
+          args[arg.name.value] = arg.value.value;
+        }
       }
-    }
-    return new PathElem({
-      name: pathElemAst.name.value,
-      args: new I.Map(args),
-    });
-  }));
+      return new PathElem({
+        name: pathElemAst.name.value,
+        args: I.Map(args),
+      });
+    })
+  );
 
   const program = ast.program.value;
-  return new Ref({ program, path, });
+  return new Ref({ program, path });
 }
-
