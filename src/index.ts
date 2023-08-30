@@ -48,7 +48,7 @@ export function isRefTyped(typed: any): boolean {
 
 export function isPrimitiveTypeName(name: string): boolean {
   return (
-    typeof name === "string" && /^(Int|Float|String|Boolean|Void)$/.test(name)
+    typeof name === "string" && /^(Int|Float|String|Boolean|Void|Json)$/.test(name)
   );
 }
 
