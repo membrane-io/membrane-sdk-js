@@ -55,7 +55,7 @@ export function isPrimitiveTypeName(name: string): boolean {
 export function isValidIdentifier(name: string): boolean {
   return (
     typeof name === "string" &&
-    /^[a-z][a-zA-Z0-9]{0,63}$/.test(name) &&
+    /^[a-z][a-zA-Z0-9@]{0,63}$/.test(name) &&
     !/^(self|undefined|null|true|false)$/.test(name)
   );
 }
