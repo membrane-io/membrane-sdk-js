@@ -113,7 +113,7 @@ export class RefParser {
     const start = this.position;
 
     let name;
-    if (isLowerCase(this.code) || isDigit(this.code) || this.code === _POUND) {
+    if (isLowerCase(this.code) || isDigit(this.code) || this.code === _POUND || this.code === _AT) {
       name = this.parseProgramIdentifier();
     } else {
       name = { value: "" };
@@ -149,7 +149,8 @@ export class RefParser {
     if (
       !isLowerCase(this.code) &&
       !isDigit(this.code) &&
-      !this.code === (_POUND as any)
+      !this.code === (_POUND as any) &&
+      !this.code === (_AT as any)
     ) {
       throw this.syntaxError(`Expected program identifier`);
     }
@@ -450,6 +451,7 @@ const _PLUS = "+".charCodeAt(0);
 const _MINUS = "-".charCodeAt(0);
 const _UNDERSCORE = "_".charCodeAt(0);
 const _POUND = "#".charCodeAt(0);
+const _AT = "@".charCodeAt(0);
 const _BRACKETOPEN = "[".charCodeAt(0);
 const _BRACKETCLOSE = "]".charCodeAt(0);
 const _E = "E".charCodeAt(0);
