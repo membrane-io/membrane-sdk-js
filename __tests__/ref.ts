@@ -11,12 +11,13 @@ describe("$$", () => {
   });
 
   it("Throws when null is passed as an argument", () => {
-    expect(() => $$(null)).toThrow("Refs can only be constructed");
+    expect(() => $$(null as any)).toThrow("Refs can only be constructed");
   });
 
-  it("create ref with a name using AT", () => {
-    const t1 = $$("a@b:");
-    expect(t1).toBeInstanceOf(Ref);
+  it("Throws when more than one @ is present in root", () => {
+    expect(() => $$("a@@b:")).toThrow('Ref root cannot have more than one "@"');
+    expect(() => $$("@a@b:")).toThrow("Expected program identifier");
+    expect(() => $$("ab@@:")).toThrow('Ref root cannot have more than one "@"');
   });
 
   it("creates refs from a string", () => {
@@ -34,6 +35,12 @@ describe("$$", () => {
     const t2 = $$(t1);
 
     expect(t2).toEqualImmutable(t1);
+  });
+
+  it("create ref with @ in root (i.e. shared program)", () => {
+    expect($$("a@b:")).toBeInstanceOf(Ref);
+    expect($$("c@:")).toBeInstanceOf(Ref);
+    expect($$("program@user:")).toBeInstanceOf(Ref);
   });
 
   it("creates refs from a ref that was created in a different context", () => {
@@ -60,7 +67,7 @@ describe("$$", () => {
 
   it("handles complex ref strings correctly", () => {
     const t1: any = $$(
-      'program:path(x:1).with(y:[inner:ref(with:"args").and.stuff]).arguments(value:true)'
+      'program:path(x:1).with(y:(inner:ref(with:"args").and.stuff)).arguments(value:true)'
     );
 
     // path(...)
@@ -138,12 +145,26 @@ describe("PathElem", () => {
 });
 
 describe("Ref", () => {
+  it("accepts escaped string arguments", () => {
+    const t1 = ':a(x:"{ \\"key\\": \\"val\\" }")';
+    expect($$(t1).toString()).toEqual(t1);
+  });
+
+  it("accepts escaped string arguments", () => {
+    const t1 = ':a(x:"{\\"key\\":\\"val\\"}")';
+    expect(
+      $$(":")
+        .push("a", { x: JSON.stringify({ key: "val" }) })
+        .toString()
+    ).toEqual(t1);
+  });
+
   it("normalizes the string representation when converted to a string", () => {
     // Notice the order of parameters, they are sorted in the normalized version
     const refStr =
-      'program:path(z:5,y:0,x:1).with(y:[inner:ref(b:"s",a:1).and.stuff]).arguments(value:true)';
+      'program:path(z:5,y:0,x:1).with(y:(inner:ref(b:"s",a:1).and.stuff)).arguments(value:true)';
     const normalizedRefStr =
-      'program:path(x:1,y:0,z:5).with(y:[inner:ref(a:1,b:"s").and.stuff]).arguments(value:true)';
+      'program:path(x:1,y:0,z:5).with(y:(inner:ref(a:1,b:"s").and.stuff)).arguments(value:true)';
     const t1 = $$(refStr);
 
     expect(t1.toString()).toEqual(normalizedRefStr);
@@ -152,7 +173,7 @@ describe("Ref", () => {
   it("turns itself correctly into valid graphql arguments", () => {
     // Notice the order of parameters, they are sorted in the normalized version
     const refStr =
-      'program:path(z:5,y:0,x:1).with(y:[inner:ref(b:"s",a:1).and.stuff]).arguments(value:true)';
+      'program:path(z:5,y:0,x:1).with(y:(inner:ref(b:"s",a:1).and.stuff)).arguments(value:true)';
     const gqlArgsStr =
       'program:path(x:1,y:0,z:5).with(y:"inner:ref(a:1,b:\\"s\\").and.stuff").arguments(value:true)';
     const t1 = $$(refStr);
@@ -270,14 +291,14 @@ describe("Ref", () => {
 
   it("can express itself as relative to another ref", () => {
     const t1 = $$('a:b(x:"hi").c');
-    const t2 = $$('a:b(x:"hi").c.d(y:[a:b])');
+    const t2 = $$('a:b(x:"hi").c.d(y:(a:b))');
     const t3 = t2.relativeTo(t1, "1");
-    expect(t3).toEqualImmutable($$("1:d(y:[a:b])"));
+    expect(t3).toEqualImmutable($$("1:d(y:(a:b))"));
   });
 
   it("fails to express itself as relative to a ref that points to another program", () => {
     const t1 = $$('a:b(x:"hi").c');
-    const t2 = $$('x:b(x:"hey").c.d(y:[a:b])');
+    const t2 = $$('x:b(x:"hey").c.d(y:(a:b))');
     expect(() => {
       t2.relativeTo(t1, "1");
     }).toThrow(
@@ -287,7 +308,7 @@ describe("Ref", () => {
 
   it("fails to express itself as relative to a ref that is not a prefix of it", () => {
     const t1 = $$('a:b(x:"hi").c');
-    const t2 = $$('a:b(x:"hey").c.d(y:[a:b])');
+    const t2 = $$('a:b(x:"hey").c.d(y:(a:b))');
     expect(() => {
       t2.relativeTo(t1, "1");
     }).toThrow("Ref cannot be expressed as relative to provided ref");
@@ -295,10 +316,10 @@ describe("Ref", () => {
 
   describe("isPrefix", () => {
     it("returns true for a ref that is a prefix of the other one", () => {
-      const t1 = $$('a:b(x:"hi",y:[a:b]).c');
-      const t2 = $$('a:b(x:"hi",y:[a:b]).c.d.e');
-      const t3 = $$('a:b(x:"hi",y:[a:b]).c.d.e(x:"hi",y:[a:b])');
-      const t4 = $$('a:b(x:"hi",y:[a:b]).c(z:1)');
+      const t1 = $$('a:b(x:"hi",y:(a:b)).c');
+      const t2 = $$('a:b(x:"hi",y:(a:b)).c.d.e');
+      const t3 = $$('a:b(x:"hi",y:(a:b)).c.d.e(x:"hi",y:(a:b))');
+      const t4 = $$('a:b(x:"hi",y:(a:b)).c(z:1)');
       expect(t1.isPrefix(t2)).toBe(true);
       expect(t1.isPrefix(t1)).toBe(true);
       expect(t1.isPrefix(t3)).toBe(true);
@@ -306,10 +327,10 @@ describe("Ref", () => {
     });
 
     it("returns false for a ref which is not a prefix of the other one", () => {
-      const t1 = $$('a:b(x:"hi",y:[a:b]).c');
-      const t2 = $$('b:b(x:"hi",y:[a:b]).c');
-      const t3 = $$('a:b(x:"bye",y:[a:b]).c.e');
-      const t4 = $$('a:b(x:"hi",y:[a:b]).d');
+      const t1 = $$('a:b(x:"hi",y:(a:b)).c');
+      const t2 = $$('b:b(x:"hi",y:(a:b)).c');
+      const t3 = $$('a:b(x:"bye",y:(a:b)).c.e');
+      const t4 = $$('a:b(x:"hi",y:(a:b)).d');
       const t5 = $$("a:");
       expect(t1.isPrefix(t2)).toBe(false);
       expect(t1.isPrefix(t3)).toBe(false);
@@ -319,7 +340,7 @@ describe("Ref", () => {
   });
 
   it("can get the last element of the path", () => {
-    const t1 = $$('a:b(x:"hey").c.d(y:[a:b])');
+    const t1 = $$('a:b(x:"hey").c.d(y:(a:b))');
     const elem = new PathElem({
       name: "d",
       args: I.Map({ y: $$("a:b") }),
@@ -332,13 +353,13 @@ describe("Ref", () => {
       const t1 = $$("a:b");
       const t2 = t1.push("c", { x: 1, y: $$("a:b") });
 
-      expect(t2).toEqualImmutable($$("a:b.c(x:1,y:[a:b])"));
+      expect(t2).toEqualImmutable($$("a:b.c(x:1,y:(a:b))"));
     });
   });
 
   describe("pop", () => {
     it("removes the last element from the path", () => {
-      const t1 = $$("a:b.c(x:1,y:[a:b])");
+      const t1 = $$("a:b.c(x:1,y:(a:b))");
       const t2 = t1.pop();
       expect(t2).toEqualImmutable($$("a:b"));
     });
@@ -346,9 +367,9 @@ describe("Ref", () => {
 
   describe("shift", () => {
     it("removes the first element from the path", () => {
-      const t1 = $$("a:b.c(x:1,y:[a:b])");
+      const t1 = $$("a:b.c(x:1,y:(a:b))");
       const t2 = t1.shift();
-      expect(t2).toEqualImmutable($$("a:c(x:1,y:[a:b])"));
+      expect(t2).toEqualImmutable($$("a:c(x:1,y:(a:b))"));
     });
   });
 
@@ -359,7 +380,7 @@ describe("Ref", () => {
   });
 
   it("gets the arguments at a path element correctly", () => {
-    const t1 = $$("a:b.c(x:1,y:[a:b]).d(z:true)");
+    const t1 = $$("a:b.c(x:1,y:(a:b)).d(z:true)");
 
     expect(t1.argsAt(":")).toEqual({});
     expect(t1.argsAt(":b")).toEqual({});

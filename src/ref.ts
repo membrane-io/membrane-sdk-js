@@ -1,7 +1,7 @@
 import I from "immutable";
 import { RefParser } from "./refParser.js";
 
-type RefT = Ref | undefined | string | { $ref: string; };
+type RefT = Ref | undefined | string | { $ref: string };
 
 // Serializes the provided value into its literal ref version
 function serializeValue(value: string | Ref, isGraphQL: boolean): string {
@@ -9,9 +9,9 @@ function serializeValue(value: string | Ref, isGraphQL: boolean): string {
     if (isGraphQL) {
       return `"${value.toString().replace(/"/g, '\\"')}"`;
     }
-    return `[${value}]`;
-  } else if (typeof value === "string") {
-    return `"${value}"`;
+    return `(${value})`;
+  } else if (typeof value === "string" || typeof value === "object") {
+    return JSON.stringify(value);
   }
   return `${value}`;
 }
